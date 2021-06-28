@@ -2,9 +2,9 @@
     if(!$){
         throw 'cron-selector : JQuery is needed'
     }
-    var timeTypes = ['second','minute','hour','day','month','week','year'],
-    timeNames = ['秒','分','时','日/月','月','日/周','年'],
-    timeValues = ['0-59','0-59','0-23','1-31','1-12','1-7','1970-2099'],
+    var timeTypes = ['second','minute','hour','day','month','week'],
+    timeNames = ['秒','分','时','日/月','月','日/周'],
+    timeValues = ['0-59','0-59','0-23','1-31','1-12','1-7'],
     localWeekSequence = ['2','3','4','5','6','7','1'],
     weekChar = ['/','-','*',',','?','L','C','#'],
     typeSelectorClass = 'typeSelector',
