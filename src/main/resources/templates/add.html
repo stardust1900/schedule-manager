@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<title>增加任务</title>
+	<script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+  	<script th:src="@{/js/bootstrap.min.js}"></script>
+  	<script th:src="@{/js/cron-selector.js}"></script>
+  	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
+  	<link th:href="@{/css/cron-selector.css}" rel="stylesheet" type="text/css" />
+  	<style type="text/css">
+  	body {
+	  padding-top: 20px;
+	  padding-bottom: 20px;
+	}
+  	</style>
+</head>
+<body>
+<div class="container">
+
+	<div class="panel panel-default">
+	  <div class="panel-heading">增加任务</div>
+	  <div class="panel-body">
+	    <form class="form-horizontal" method="post" th:action="@{/addTask}" id="taskForm">
+		  <div class="form-group" id="taskNameDiv">
+		    <label for="taskName" class="col-sm-2 control-label">任务名称</label>
+		    <div class="col-sm-10">
+		      <input type="text" class="form-control" id="taskName" name="taskName" placeholder="任务名称">
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="taskName" class="col-sm-2 control-label">任务描述</label>
+		    <div class="col-sm-10">
+		      <textarea class="form-control" rows="2" id="taskDesc" name="taskDesc"></textarea>
+		    </div>
+		  </div>
+		  <div class="form-group" id="taskTypeDiv">
+		    <label for="taskType" class="col-sm-2 control-label">任务类型</label>
+		    <div class="col-sm-10">
+		        <select class="form-control" name="taskType" id="taskType">
+		          <option value="">请选择任务类型</option>
+				  <option value="http">http</option>
+				  <option value="shell">shell</option>
+				  <option value="sql">sql</option>
+				</select>
+		    </div>
+		  </div>
+		  <div class="form-group" id="cronDiv">
+		    <label for="cron" class="col-sm-2 control-label">cron表达式</label>
+		    <div class="col-sm-10">
+		      <div class="input-group">
+			      <input type="text" class="form-control" id="cron" name="cron" placeholder="" readonly>
+			      <span class="input-group-btn">
+			        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#cronModal"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></button>
+			      </span>
+			    </div><!-- /input-group -->
+		    </div>
+		  </div>
+		  <div id="httpParams">
+			  <div class="form-group" id="http_method_div">
+			    <label for="http_method" class="col-sm-2 control-label">请求方式</label>
+			    <div class="col-sm-10">
+			      <select class="form-control" id="http_method">
+		          <option value="">请选择请求方式</option>
+				  <option value="get">get</option>
+				  <option value="post">post</option>
+				</select>
+			    </div>
+			  </div>
+			  
+			  <div class="form-group" id="http_url_div">
+			    <label for="http_url" class="col-sm-2 control-label">请求地址</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="http_url" placeholder="请求地址">
+			    </div>
+			  </div>
+			  
+			  <div class="form-group">
+			    <label for="http_contentType" class="col-sm-2 control-label">内容类型</label>
+			    <div class="col-sm-10">
+			      <select class="form-control" id="http_contentType">
+		          <option value="">请选择内容类型</option>
+				  <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+				  <option value="application/json">application/json</option>
+				</select>
+			    </div>
+			  </div>
+			  
+			  <div class="form-group" id="http_args_div">
+			    <label for="http_args" class="col-sm-2 control-label">请求参数</label>
+			    <div class="col-sm-10">
+			      <textarea class="form-control" rows="3" id="http_args"></textarea>
+			      <span id="helpBlock2" class="help-block">使用json格式，key用双引号包裹</span>
+			    </div>
+			  </div>
+		  
+		  </div>
+		  
+		  <div class="form-group">
+		    <div class="col-sm-offset-2 col-sm-10">
+		      <button type="button" class="btn btn-default" id="confirm">确定</button>
+		      <a href="/" class="btn btn-default" role="button">取消</a>
+		      <button type="button" class="btn btn-default" id="test">测试</button>
+		    </div>
+		  </div>
+		</form>
+	  </div>
+	</div>
+	
+	<div class="alert alert-warning" role="alert" id="testResult">
+	  <button type="button" class="close" aria-label="Close" id="testResultClose"><span aria-hidden="true">&times;</span></button>
+	  <strong>测试结果:</strong><br/>
+	  <span id="resultContent"></span>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="cronModal" tabindex="-1" role="dialog" aria-labelledby="cronModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">cron表达式</h4>
+      </div>
+      <div class="modal-body">
+       <div id="cronSelector"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" id="saveCron" class="btn btn-primary">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+<script>
+     $(function(){
+    	 $("#httpParams").hide();
+    	 $("#testResult").hide();
+    	 
+        var cronSelector = $.cronSelector({
+                                container:'#cronSelector',
+                                locatedWeek:true
+                            });
+                            
+        /* cronSelector.parseVal('7,16,59 1-29/3 * ? * 2,3,1 *'); */
+        cronSelector.parseVal('* * * ? * * *');
+        $('#saveCron').click(function(){
+        	$('#cron').val(cronSelector.val());
+        	$('#cronModal').modal('hide')
+           /*  alert(cronSelector.val()); */
+        	$("#cronDiv").removeClass("has-error");
+        }); 
+    });
+     $("#taskName").change(function(){
+    	 if('' != $("#taskName").val()) {
+    		 $("#taskNameDiv").removeClass("has-error");
+    	 }
+     });
+     
+     $("#taskType").change(function(){
+    	 if('http' == $("#taskType").val()) {
+    		 $("#httpParams").show();
+    		 $("#taskTypeDiv").removeClass("has-error");
+    	 }else{
+    		 $("#httpParams").hide();
+    	 }
+     });
+     
+     $("#test").click(function(){
+    	 
+    	 var taskType = $("#taskType").val();
+    	 
+    	 switch(taskType) {
+	    	 case '' : 
+	    		 $("#taskTypeDiv").addClass("has-error");
+	    		 $("#taskTypeDiv").focus();
+	    		 break;
+	    	 case 'http':
+	    		 httpTest();
+	    		 break;
+    	 }
+    	 
+     });
+     
+     function httpTest() {
+    	if('' == $("#http_method").val()){
+    		 $("#http_method_div").addClass("has-error");
+    		 $("#http_method_div").focus();
+    		 return;
+    	}
+    	if('' == $("#http_url").val()){
+   		 $("#http_url_div").addClass("has-error");
+   		 $("#http_url_div").focus();
+   		 return;
+   		}
+    	
+    	if('' != $("#http_args").val()){
+    		var args = $("#http_args").val();
+    		try {
+    		　　　　var obj=JSON.parse(args);
+    		　　　　if(typeof obj == 'object' && obj ){
+    		　　　　  　
+    		　　　　}else{
+    		　　　　　alert("请求参数格式不正确1");
+    		 		$("#http_args_div").addClass("has-error");
+    				return;
+    		　　　　}
+    		　　} catch(e) {
+    			    console.log(e);
+    		　　　　 alert("请求参数格式不正确2");
+    		  		$("#http_args_div").addClass("has-error");
+    				return;
+    		　　}
+    	}
+    	
+    	var token = $("meta[name='_csrf']").attr("content");
+     	var header = $("meta[name='_csrf_header']").attr("content");
+     	$(document).ajaxSend(function(event, jqxhr, settings) {
+     		jqxhr.setRequestHeader(header, token);
+     	});
+     	
+     	var httpParams = {"method":$("#http_method").val(),"url":$("#http_url").val(),"contentType":$("#http_contentType").val(),"args":$("#http_args").val()};
+     	//alert($("#http_method").val());
+     	//alert(JSON.stringify(httpParams));
+     	
+     	 $.post('/testTask',{taskName:$("#taskName").val(),taskType:$("#taskType").val(),params:JSON.stringify(httpParams)},function(data){
+     		console.log(data); 
+     		$("#testResult").show();
+     		$("#resultContent").text(data);
+     	 });
+     }
+     
+     $("#testResultClose").click(function(){
+    	 $("#testResult").hide();
+     });
+     
+     
+     $("#confirm").click(function(){
+    	 if('' == $("#taskName").val()) {
+    		 $("#taskNameDiv").addClass("has-error");
+    		 $("#taskNameDiv").focus();
+    		 return;
+    	 }
+    	 if('' == $("#taskType").val()) {
+    		 $("#taskTypeDiv").addClass("has-error");
+    		 $("#taskTypeDiv").focus();
+    		 return;
+    	 }
+    	 if('' == $('#cron').val()) {
+    		 $("#cronDiv").addClass("has-error");
+    		 $("#cronDiv").focus();
+    		 return;
+    	 }
+    	 
+    	 $("#taskForm").submit();
+     });
+</script>
+</html>

@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/cron-selector.js}"></script>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
+    <link th:href="@{/css/cron-selector.css}" rel="stylesheet" type="text/css" />
+    <title>Document</title>
+</head>
+<body>
+    <!-- <div id="cronSelector"></div>
+    <button>确定</button> -->
+
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModa">
+  Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+      </div>
+      <div class="modal-body">
+       <div id="cronSelector"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveCron" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</body>
+<script>
+     $(function(){
+        var cronSelector = $.cronSelector({
+                                container:'#cronSelector',
+                                locatedWeek:true
+                            });
+                            
+        /* cronSelector.parseVal('7,16,59 1-29/3 * ? * 2,3,1 *'); */
+        cronSelector.parseVal('* * * ? * * *');
+        $('#saveCron').click(function(){
+            alert(cronSelector.val());
+        }); 
+    }); 
+</script>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+    <head>
+	    <meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <title>任务列表</title>
+        <script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+    	<script th:src="@{/js/bootstrap.min.js}"></script>
+    	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
+    	<style type="text/css">
+    	body {
+		  padding-top: 20px;
+		  padding-bottom: 20px;
+		}
+		
+		.navbar {
+		  margin-bottom: 20px;
+		}
+		
+		.input-clear-a {
+            color: white;
+        }
+
+		.input-content:hover+ .input-clear-a {
+            color: #d4d4d4;
+        }
+        
+        .input-clear-a:hover{
+            color: #d4d4d4;
+        }
+    	
+    	</style>
+    </head>
+    <body>
+    <div class="container">
+	     <!-- Static navbar -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="#">任务管理</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li class="active"><a href="#">任务列表</a></li>
+              <li><a href="#">任务日志</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="logout">登出</a></li>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+		<div class="panel panel-default">
+		  <div class="panel-body">
+		   <form class="form-inline" method="get" action="/" id="queryForm">
+		      <input type="hidden" name="pageIndex" id="pageIndex" th:value="${pageIndex}">
+			  <div class="form-group has-feedback">
+			    <label for="taskName" class="control-label">任务名称</label>
+			    <input type="text" class="form-control input-content" id="taskName" name="taskName" placeholder="请输入任务名称" th:value="${taskName}">
+			    <span class="glyphicon glyphicon-remove form-control-feedback input-clear-a" style="pointer-events: auto;" onclick="$('#taskName').val('')"></span>
+			  </div>
+			  <div class="form-group">
+			    <label for="taskType" class="control-label">任务类型</label>
+			    <select class="form-control" name="taskType">
+			      <option value="">全部</option>
+				  <option th:selected="${taskType == 'http'}" value="http">http</option>
+				  <option th:selected="${taskType == 'shell'}" value="shell">shell</option>
+				  <option th:selected="${taskType == 'sql'}" value="sql">sql</option>
+				</select>
+			  </div>
+			  <div class="form-group">
+			  <button type="submit" class="btn btn-primary">查询</button>
+			  <a href="/toAdd" class="btn btn-info active" role="button">增加</a>
+			  </div>
+			</form>
+		  </div>
+		</div>
+
+	
+	
+	<div class="panel panel-default">
+	  <!-- Table -->
+	  <table class="table">
+	  <tr>
+        <th>任务名称</th>
+        <th>任务类型</th>
+        <th>cron表达式</th>
+        <th>状态</th>
+        <th>上次执行时间</th>
+        <th>下次执行时间</th>
+        <th>操作</th>
+      </tr>
+	   <tr th:each="task : ${tasks.content}">
+        <td th:text="${task.taskName}"></td>
+        <td th:text="${task.taskType}"></td>
+        <td th:text="${task.cron}"></td>
+        <td th:text="${task.taskState}"></td>
+        <td></td>
+        <td th:text="${task.nextExcTime}"></td>
+        <td>
+        <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="暂停任务" th:if="${task.taskState == '1'}" th:onclick="|pauseTask(${task.taskId})|">
+        <span class="glyphicon glyphicon-pause" aria-hidden="true"></span>
+        </button>
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="启动任务" th:if="${task.taskState == '0'}" th:onclick="|startTask(${task.taskId})|">
+        <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+        </button>
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="立即执行" th:onclick="|exeTask(${task.taskId})|">
+        <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+        </button>
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="删除任务" th:onclick="|removeTask(${task.taskId})|">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </button>
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="修改任务" th:onclick="|editTask(${task.taskId})|">
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </button>
+        </td>
+      </tr>
+	  </table>
+	</div>
+	<nav aria-label="..." th:with="totalPages=${tasks.totalPages==0}?1:${tasks.totalPages},number=${tasks.number+1}">
+		  <ul class="pagination">
+		    <li th:class="${tasks.first}? 'disabled'">
+		    <a href="#" aria-label="Previous" th:onclick="${tasks.first}?'':'queryTasks('+${number-1}+')'"><span aria-hidden="true">&laquo;</span></a>
+		    </li>
+		    <li th:each="index : ${#numbers.sequence(1,totalPages)}" th:class="${index==number}?'active'">
+			    <a href="#" th:text="${index}" th:onclick="${index==number}?'':'queryTasks('+${index}+')'">
+			    <span class="sr-only" th:if="${index==number}">(current)</span>
+			    </a>
+		    </li>
+		    <li th:class="${tasks.last}? 'disabled'">
+		      <a href="#" aria-label="Next" th:onclick="${tasks.last}?'':'queryTasks('+${number+1}+')'">
+		        <span aria-hidden="true">&raquo;</span>
+		      </a>
+		    </li>
+		  </ul>
+	  </nav>
+    </div>
+    
+    <form th:action="@{/logout}" method="post" id="logoutForm">
+    </form>
+    
+    <div class="modal fade" tabindex="-1" role="dialog" id="taskModal">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title">确认</h4>
+	      </div>
+	      <div class="modal-body">
+
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+	        <button type="button" class="btn btn-primary">确定</button>
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+        
+    </body>
+    <script>
+
+    $(function() {
+    	// Handler for .ready() called.
+    	var token = $("meta[name='_csrf']").attr("content");
+     	var header = $("meta[name='_csrf_header']").attr("content");
+     	$(document).ajaxSend(function(event, jqxhr, settings) {
+     		jqxhr.setRequestHeader(header, token);
+     	});
+    });
+    $("#logout").click(function(){
+    	$("#logoutForm").submit();
+    });
+    
+    function queryTasks(pageIndex) {
+    	$("#pageIndex").val(pageIndex);
+    	$("#queryForm").submit();
+    }
+    function showModal(title,content,handler){
+    	 var modal = $('.modal-content');
+   		 modal.find('.modal-title').text(title)
+   		 modal.find('.modal-body').text(content)
+   		 var btn = modal.find('.modal-footer .btn.btn-primary');
+   		 btn.off();
+   		 btn.click(()=>{
+   			  handler();
+   			  $('#taskModal').modal('hide');
+   			  });
+    	$('#taskModal').modal('show');
+    }
+    function pauseTask(taskId) {
+    	showModal('确定暂停','确定要暂停任务吗？',function(){
+    		console.log('taskId:'+taskId)
+        	$.post('/pauseTask',{taskId:taskId},function(data){
+         		if("success" == data) {
+         			$("#queryForm").submit();
+         		}else{
+         			alert("暂停任务失败！");
+         		}
+         	 });
+    	});
+    }
+    
+    function startTask(taskId) {
+    	showModal('确定暂停','确定要暂停任务吗？',function(){
+    		console.log('taskId:'+taskId)
+        	$.post('/startTask',{taskId:taskId},function(data){
+         		if("success" == data) {
+         			$("#queryForm").submit();
+         		}else{
+         			alert("启动任务失败！");
+         		}
+         	 });
+    	});
+    }
+
+    </script>
+</html>
