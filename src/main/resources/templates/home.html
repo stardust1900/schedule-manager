@@ -98,21 +98,21 @@
         <td></td>
         <td th:text="${task.nextExcTime}"></td>
         <td>
-        <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="暂停任务" th:if="${task.taskState == '1'}" th:onclick="|pauseTask(${task.taskId})|">
+        <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="暂停任务" th:if="${task.taskState == '1'}" th:onclick="pauseTask([[${task.taskId}]],[[${task.taskName}]])" >
         <span class="glyphicon glyphicon-pause" aria-hidden="true"></span>
         </button>
-         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="启动任务" th:if="${task.taskState == '0'}" th:onclick="|startTask(${task.taskId})|">
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="启动任务" th:if="${task.taskState == '0'}" th:onclick="startTask([[${task.taskId}]],[[${task.taskName}]])">
         <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
         </button>
-         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="立即执行" th:onclick="|exeTask(${task.taskId})|">
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="立即执行" th:onclick="exeTask([[${task.taskId}]],[[${task.taskName}]])">
         <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
         </button>
-         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="删除任务" th:onclick="|removeTask(${task.taskId})|">
+         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="删除任务" th:onclick="removeTask([[${task.taskId}]],[[${task.taskName}]])">
         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
         </button>
-         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="修改任务" th:onclick="|editTask(${task.taskId})|">
+        <a th:href="'/editTask?taskId='+${task.taskId}" class="btn btn-default btn-xs" role="button" data-toggle="tooltip" data-placement="bottom" title="修改任务">
         <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-        </button>
+        </a>
         </td>
       </tr>
 	  </table>
@@ -188,8 +188,8 @@
    			  });
     	$('#taskModal').modal('show');
     }
-    function pauseTask(taskId) {
-    	showModal('确定暂停','确定要暂停任务吗？',function(){
+    function pauseTask(taskId,taskName) {
+    	showModal('确定暂停','确定要暂停‘'+taskName+'’任务吗？',function(){
     		console.log('taskId:'+taskId)
         	$.post('/pauseTask',{taskId:taskId},function(data){
          		if("success" == data) {
@@ -201,14 +201,27 @@
     	});
     }
     
-    function startTask(taskId) {
-    	showModal('确定暂停','确定要暂停任务吗？',function(){
+    function startTask(taskId,taskName) {
+    	showModal('确定启动','确定要启动‘'+taskName+'’任务吗？',function(){
     		console.log('taskId:'+taskId)
         	$.post('/startTask',{taskId:taskId},function(data){
          		if("success" == data) {
          			$("#queryForm").submit();
          		}else{
          			alert("启动任务失败！");
+         		}
+         	 });
+    	});
+    }
+    
+    function removeTask(taskId,taskName) {
+    	showModal('确定删除','确定要删除‘'+taskName+'’任务吗？',function(){
+    		console.log('taskId:'+taskId)
+        	$.post('/removeTask',{taskId:taskId},function(data){
+         		if("success" == data) {
+         			$("#queryForm").submit();
+         		}else{
+         			alert("删除任务失败！");
          		}
          	 });
     	});

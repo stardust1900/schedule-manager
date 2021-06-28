@@ -19,21 +19,21 @@ import org.springframework.web.client.RestTemplate;
 import org.thymeleaf.util.StringUtils;
 
 import com.demonisles.schedulemanager.domain.Task;
-import com.demonisles.schedulemanager.service.TestService;
+import com.demonisles.schedulemanager.service.TaskExcService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-public class TestServiceImpl implements TestService {
+public class TaskExcServiceImpl implements TaskExcService {
 
-	private static final Logger log = LoggerFactory.getLogger(TestServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(TaskExcServiceImpl.class);
 
 	@Autowired
 	private RestTemplate restTemplate;
 
 	@Override
-	public String httpGetTest(String url, Map<String, String> uriVariables) {
+	public String httpGet(String url, Map<String, String> uriVariables) {
 		StringBuffer gurl = new StringBuffer(url);
 
 		if (!CollectionUtils.isEmpty(uriVariables)) {
@@ -49,7 +49,7 @@ public class TestServiceImpl implements TestService {
 	}
 
 	@Override
-	public String httpPostTest(String url, Map<String, String> uriVariables, String contentType) {
+	public String httpPost(String url, Map<String, String> uriVariables, String contentType) {
 		if (MediaType.APPLICATION_FORM_URLENCODED_VALUE.equals(contentType)) {
 			MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();
 			for (Entry<String, String> entry : uriVariables.entrySet()) {
@@ -77,7 +77,7 @@ public class TestServiceImpl implements TestService {
 	}
 
 	@Override
-	public String httpTest(Task task) {
+	public String httpExc(Task task) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			JsonNode params = mapper.readTree(task.getParams());
@@ -99,9 +99,9 @@ public class TestServiceImpl implements TestService {
 				}
 			}
 			if ("get".equalsIgnoreCase(method)) {
-				return httpGetTest(url, uriVariables);
+				return httpGet(url, uriVariables);
 			} else if ("post".equalsIgnoreCase(method)) {
-				return httpPostTest(url, uriVariables, contentType);
+				return httpPost(url, uriVariables, contentType);
 			} else {
 				return "unsupported method";
 			}

@@ -1,7 +1,6 @@
 package com.demonisles.schedulemanager.service.impl;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -17,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.repository.TaskRepository;
+import com.demonisles.schedulemanager.service.ScheduleService;
 import com.demonisles.schedulemanager.service.TaskService;
 
 @Service
@@ -24,6 +24,9 @@ public class TaskServiceImpl implements TaskService {
 
 	@Autowired
 	private TaskRepository taskRepository;
+	
+	@Autowired
+	private ScheduleService scheduleService;
 	
 	@Override
 	public Page<Task> listTask(String taskName, String taskType, Pageable page) {
@@ -58,17 +61,14 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public void addTask(Task task) {
+	public void saveTask(Task task) {
 		taskRepository.save(task);
-	}
-
-	@Override
-	public void modifyTask(Task task) {
-		taskRepository.save(task);
+		scheduleService.scheduleCronTask(task);
 	}
 
 	@Override
 	public void removeTask(Long taskId) {
+		scheduleService.removeTask(taskId);
 		taskRepository.deleteById(taskId);
 	}
 

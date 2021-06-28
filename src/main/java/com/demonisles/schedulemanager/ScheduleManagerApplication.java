@@ -30,9 +30,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 import com.demonisles.schedulemanager.domain.Role;
+import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.domain.User;
 import com.demonisles.schedulemanager.repository.RoleRepository;
+import com.demonisles.schedulemanager.repository.TaskRepository;
 import com.demonisles.schedulemanager.repository.UserRepository;
+import com.demonisles.schedulemanager.service.ScheduleService;
 
 @SpringBootApplication
 @EnableScheduling
@@ -43,11 +46,14 @@ public class ScheduleManagerApplication {
 	}
 	
 	@Bean
-	  public CommandLineRunner demo(UserRepository userRepo,RoleRepository roleRepo) {
+	public CommandLineRunner demo(UserRepository userRepo,RoleRepository roleRepo,
+			TaskRepository taskRepo, ScheduleService scheduleService) {
+		
 		return (args)->{
 //			userRepo.deleteAll();
 //			roleRepo.deleteAll();
 			Iterable<User> users = userRepo.findAll();
+			//初始化用户
 			if(users == null || !users.iterator().hasNext()) {
 				PasswordEncoder pe = passwordEncoder();
 				User user = new User();
@@ -65,6 +71,12 @@ public class ScheduleManagerApplication {
 				
 				userRepo.save(user);
 			}
+			//启动任务
+			Iterable<Task> tasks = taskRepo.findAll();
+			for(Task t : tasks) {
+				scheduleService.scheduleCronTask(t);
+			}
+			
 		};
 		
 	}

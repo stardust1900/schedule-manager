@@ -23,17 +23,19 @@
 	<div class="panel panel-default">
 	  <div class="panel-heading">增加任务</div>
 	  <div class="panel-body">
-	    <form class="form-horizontal" method="post" th:action="@{/addTask}" id="taskForm">
+	    <form class="form-horizontal" method="post" th:action="@{/saveTask}" id="taskForm">
+	     <input type="hidden" name="taskId" id="taskId" th:value="${task.taskId}">
+	     <input type="hidden" name="params" id="params" th:value="${task.params}">
 		  <div class="form-group" id="taskNameDiv">
 		    <label for="taskName" class="col-sm-2 control-label">任务名称</label>
 		    <div class="col-sm-10">
-		      <input type="text" class="form-control" id="taskName" name="taskName" placeholder="任务名称">
+		      <input type="text" class="form-control" id="taskName" name="taskName" placeholder="任务名称" th:value="${task.taskName}">
 		    </div>
 		  </div>
 		  <div class="form-group">
 		    <label for="taskName" class="col-sm-2 control-label">任务描述</label>
 		    <div class="col-sm-10">
-		      <textarea class="form-control" rows="2" id="taskDesc" name="taskDesc"></textarea>
+		      <textarea class="form-control" rows="2" id="taskDesc" name="taskDesc" th:text="${task.taskDesc}"></textarea>
 		    </div>
 		  </div>
 		  <div class="form-group" id="taskTypeDiv">
@@ -41,9 +43,9 @@
 		    <div class="col-sm-10">
 		        <select class="form-control" name="taskType" id="taskType">
 		          <option value="">请选择任务类型</option>
-				  <option value="http">http</option>
-				  <option value="shell">shell</option>
-				  <option value="sql">sql</option>
+				  <option value="http" th:selected="${'http'==task.taskType}">http</option>
+				  <option value="shell" th:selected="${'shell'==task.taskType}">shell</option>
+				  <option value="sql" th:selected="${'sql'==task.taskType}">sql</option>
 				</select>
 		    </div>
 		  </div>
@@ -51,7 +53,7 @@
 		    <label for="cron" class="col-sm-2 control-label">cron表达式</label>
 		    <div class="col-sm-10">
 		      <div class="input-group">
-			      <input type="text" class="form-control" id="cron" name="cron" placeholder="" readonly>
+			      <input type="text" class="form-control" id="cron" name="cron" placeholder="" readonly th:value="${task.cron}">
 			      <span class="input-group-btn">
 			        <button class="btn btn-default" type="button" data-toggle="modal" data-target="#cronModal"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></button>
 			      </span>
@@ -139,7 +141,21 @@
 
 <script>
      $(function(){
-    	 $("#httpParams").hide();
+    	 if('http' != $("#taskType").val()){
+    		 $("#httpParams").hide();
+    	 }else{
+    		 var taskParams = $("#params").val();
+    		 if(taskParams){
+    			 var json = JSON.parse(taskParams);
+        		 console.log(json);
+        		 $("#http_method").val(json['method']);
+        		 $("#http_url").val(json['url']);
+        		 $("#http_contentType").val(json['contentType']);
+        		 $("#http_args").val(json['args']);
+    		 }
+    		 
+    	 }
+    	 
     	 $("#testResult").hide();
     	 
         var cronSelector = $.cronSelector({
@@ -148,7 +164,12 @@
                             });
                             
         /* cronSelector.parseVal('7,16,59 1-29/3 * ? * 2,3,1 *'); */
-        cronSelector.parseVal('* * * ? * * *');
+        if($('#cron').val()){
+        	cronSelector.parseVal($('#cron').val());
+        }else{
+        	cronSelector.parseVal('* * * ? * * ');
+        }
+        
         $('#saveCron').click(function(){
         	$('#cron').val(cronSelector.val());
         	$('#cronModal').modal('hide')
@@ -187,16 +208,16 @@
     	 
      });
      
-     function httpTest() {
-    	if('' == $("#http_method").val()){
+     function httpValidate(){
+    	 if('' == $("#http_method").val()){
     		 $("#http_method_div").addClass("has-error");
     		 $("#http_method_div").focus();
-    		 return;
+    		 return false;
     	}
     	if('' == $("#http_url").val()){
    		 $("#http_url_div").addClass("has-error");
    		 $("#http_url_div").focus();
-   		 return;
+   		 return false;
    		}
     	
     	if('' != $("#http_args").val()){
@@ -208,16 +229,23 @@
     		　　　　}else{
     		　　　　　alert("请求参数格式不正确1");
     		 		$("#http_args_div").addClass("has-error");
-    				return;
+    				return false;
     		　　　　}
     		　　} catch(e) {
     			    console.log(e);
     		　　　　 alert("请求参数格式不正确2");
     		  		$("#http_args_div").addClass("has-error");
-    				return;
+    				return false;
     		　　}
     	}
     	
+    	return true;
+     }
+     function httpTest() {
+    	
+    	if(!httpValidate()) {
+    		return;
+    	}
     	var token = $("meta[name='_csrf']").attr("content");
      	var header = $("meta[name='_csrf_header']").attr("content");
      	$(document).ajaxSend(function(event, jqxhr, settings) {
@@ -257,7 +285,14 @@
     		 return;
     	 }
     	 
-    	 $("#taskForm").submit();
+    	 if('http' == $("#taskType").val() &&  httpValidate()){
+    		 var httpParams = {"method":$("#http_method").val(),"url":$("#http_url").val(),"contentType":$("#http_contentType").val(),"args":$("#http_args").val()};
+    		 $("#params").val(JSON.stringify(httpParams));
+    		 console.log($("#params").val());
+    		 //return;
+    		 $("#taskForm").submit();
+    	 }
+    	 
      });
 </script>
 </html>
