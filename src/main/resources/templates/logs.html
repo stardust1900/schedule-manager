@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+    <head>
+	    <meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <title>任务列表</title>
+        <script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+    	<script th:src="@{/js/bootstrap.min.js}"></script>
+    	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
+    	<style type="text/css">
+    	body {
+		  padding-top: 20px;
+		  padding-bottom: 20px;
+		}
+		
+		.navbar {
+		  margin-bottom: 20px;
+		}
+		
+		.input-clear-a {
+            color: white;
+        }
+
+		.input-content:hover+ .input-clear-a {
+            color: #d4d4d4;
+        }
+        
+        .input-clear-a:hover{
+            color: #d4d4d4;
+        }
+    	
+    	</style>
+    </head>
+    <body>
+    <div class="container">
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/">任务管理</a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">任务列表</a></li>
+              <li class="active"><a href="#">任务日志</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" id="logout">登出</a></li>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+      
+      <form class="form-inline" method="get" action="/listLogs" id="queryForm">
+      	<input type="hidden" name="pageIndex" id="pageIndex" th:value="${pageIndex}">
+      </form>
+      
+   	  <div class="panel panel-default">
+	  <!-- Table -->
+	  <table class="table">
+	  <tr>
+        <th>任务名称</th>
+        <th>任务类型</th>
+        <th>执行结果</th>
+        <th>执行开始时间</th>
+        <th>执行结束时间</th>
+        <th>操作</th>
+      </tr>
+       <tr th:each="log : ${logs.content}" th:class="${log.status == '0'?'danger':''}">
+       	<td th:text="${log.task.taskName}"></td>
+       	<td th:text="${log.task.taskType}"></td>
+       	<td th:text="${log.status=='1'?'成功':'失败'}"></td>
+       	<td th:text="${log.taskBegin}"></td>
+       	<td th:text="${log.taskEnd}"></td>
+       	<td></td>
+       </tr>
+	  </table>
+	  </div>
+	  <nav aria-label="..." th:with="totalPages=${logs.totalPages==0}?1:${logs.totalPages},number=${logs.number+1},begin=${number >= 5 ? (number-2>=totalPages-5? totalPages-4 : number-2) :1}, end= ${begin+5 > totalPages ? totalPages: begin+4}">
+		  <ul class="pagination">
+		    <li th:class="${logs.first}? 'disabled'">
+		    <a href="#" aria-label="Previous" th:onclick="${logs.first}?'':'queryLogs('+${number-1}+')'"><span aria-hidden="true">&laquo;</span></a>
+		    </li>
+		    <li th:if="${begin >= 3}">
+		     <a href="#" th:text="1" th:onclick="queryLogs('1')">
+		     </a>
+		    </li>
+		    <li th:if="${begin >= 3}">
+		     <a href="#" >
+		     ...
+		     </a>
+		    </li>
+		    <li th:each="index : ${#numbers.sequence(begin,end)}" th:class="${index==number}?'active'">
+			    <a href="#" th:text="${index}" th:onclick="${index==number}?'':'queryLogs('+${index}+')'">
+			    <span class="sr-only" th:if="${index==number}">(current)</span>
+			    </a>
+		    </li>
+		    
+		    <li th:if="${totalPages-end >=2}">
+		     <a href="#" >
+		     ...
+		     </a>
+		    </li>
+		    
+		    <li th:if="${totalPages-end >=2}">
+		     <a href="#" th:text="${totalPages}" th:onclick="'queryLogs('+${totalPages}+')'">
+		     </a>
+		    </li>
+		    
+		    
+		    <li th:class="${logs.last}? 'disabled'">
+		      <a href="#" aria-label="Next" th:onclick="${logs.last}?'':'queryLogs('+${number+1}+')'">
+		        <span aria-hidden="true">&raquo;</span>
+		      </a>
+		    </li>
+		  </ul>
+	  </nav>
+    </div>
+    <form th:action="@{/logout}" method="post" id="logoutForm">
+    </form>
+    </body>
+    <script>
+	    $("#logout").click(function(){
+	    	$("#logoutForm").submit();
+	    });
+	    
+	    function queryLogs(pageIndex) {
+	    	$("#pageIndex").val(pageIndex);
+	    	$("#queryForm").submit();
+	    }
+    </script>
+</html>
+    

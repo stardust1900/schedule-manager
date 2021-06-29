@@ -95,6 +95,12 @@ public class Task {
 	@Column(name = "last_exe_status")
 	private String lastExeStatus;
 	
+	/**
+	 * 删除标记 0:未删除 1:已删除
+	 */
+	@Column(name ="del_flag",columnDefinition="tinyint default 0")
+	private int delFlag = 0;
+	
 	public long getTaskId() {
 		return taskId;
 	}
@@ -174,6 +180,12 @@ public class Task {
 		this.lastExeStatus = lastExeStatus;
 	}
 	
+	public int getDelFlag() {
+		return delFlag;
+	}
+	public void setDelFlag(int delFlag) {
+		this.delFlag = delFlag;
+	}
 	public String getNextExcTime() {
 		if(StringUtils.hasLength(cron)) {
 			try {

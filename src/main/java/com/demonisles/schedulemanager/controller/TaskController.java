@@ -2,6 +2,7 @@ package com.demonisles.schedulemanager.controller;
 
 
 import java.util.Date;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +35,8 @@ public class TaskController {
 	@Autowired
 	private TaskService taskService;
 	
-//	@Autowired
-//	private TaskScheduler taskScheduler;
 	@Autowired
-	private TaskExcService testService;
+	private TaskExcService taskExcService;
 
 	@GetMapping("/")
 	public String listTasks(@RequestParam(name = "taskName", required = false, defaultValue = "") String taskName,
@@ -84,7 +83,7 @@ public class TaskController {
 	@RequestMapping(value="/testTask",method= {RequestMethod.POST})
 	@ResponseBody
 	public String testTask(Task task) {
-		return testService.httpExc(task).get("msg");
+		return taskExcService.httpExc(task).get("msg");
 	}
 	
 	@PostMapping("/pauseTask")
@@ -133,6 +132,23 @@ public class TaskController {
 	public String removeTask(Long taskId) {
 		taskService.removeTask(taskId);
 		return "success";
+	}
+	
+	@PostMapping("/excTask")
+	@ResponseBody
+	public String excTask(Long taskId) {
+		Task task = taskService.getTaskById(taskId);
+		task.setLastExeTime(new Date());
+		Map<String,String> result = taskExcService.httpExc(task);
+		log.info("httpExc result:{}",result);
+		String retCode = result.get("code");
+		if("success".equals(retCode)) {
+			task.setLastExeStatus("1");//成功
+		}else {
+			task.setLastExeStatus("0");//失败
+		}
+		taskService.saveTask(task);
+		return result.get("code");
 	}
 	
 }

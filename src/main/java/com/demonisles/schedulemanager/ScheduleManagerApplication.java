@@ -72,7 +72,7 @@ public class ScheduleManagerApplication {
 				userRepo.save(user);
 			}
 			//启动任务
-			Iterable<Task> tasks = taskRepo.findAll();
+			Iterable<Task> tasks = taskRepo.findAllNotDel();
 			for(Task t : tasks) {
 				scheduleService.scheduleCronTask(t);
 			}

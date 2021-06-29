@@ -1,6 +1,7 @@
 package com.demonisles.schedulemanager.service.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -46,6 +49,9 @@ public class TaskServiceImpl implements TaskService {
 					Predicate type = criteriaBuilder.like(root.get("taskType").as(String.class), taskType);
 	                list.add(type);
 				}
+				
+				Predicate flag = criteriaBuilder.equal(root.get("delFlag"), 0);
+				list.add(flag);
                 Predicate[] array = new Predicate[list.size()];
                 Predicate[] predicates = list.toArray(array);
                 
@@ -69,7 +75,16 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public void removeTask(Long taskId) {
 		scheduleService.removeTask(taskId);
-		taskRepository.deleteById(taskId);
+		UserDetails user = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		Task task = taskRepository.findById(taskId).get();
+		if(task != null) {
+			task.setDelFlag(1);//删除
+			task.setTaskState("0");//状态改为暂停
+			task.setUpdatedBy(user.getUsername());
+			task.setUpdatedTime(new Date());
+			taskRepository.save(task);
+		}
+		
 	}
 
 	@Override

@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -28,8 +30,12 @@ public class TaskLog {
 	@Column(name = "log_id")
 	private long logId;
 	
-	@Column(name = "task_id")
-	private long taskId;
+//	@Column(name = "task_id")
+//	private long taskId;
+	
+	@ManyToOne
+	@JoinColumn(name = "task_id")
+	private Task task;
 	
 	@Column(name = "status")
 	private String status;
@@ -40,13 +46,85 @@ public class TaskLog {
 	@Column(name = "task_end")
 	private Date taskEnd;
 	
-	@Column(name = "request_params")
+	@Column(name = "request_params",columnDefinition="TEXT")
 	private String requestParams;
 	
-	@Column(name = "response_params")
+	@Column(name = "response_params",columnDefinition="TEXT")
 	private String responseParams;
 	
 	@Column(name = "remark")
 	private String remark;
+
+	public long getLogId() {
+		return logId;
+	}
+
+	public void setLogId(long logId) {
+		this.logId = logId;
+	}
+
+//	public long getTaskId() {
+//		return taskId;
+//	}
+//
+//	public void setTaskId(long taskId) {
+//		this.taskId = taskId;
+//	}
+
+	public Task getTask() {
+		return task;
+	}
+
+	public void setTask(Task task) {
+		this.task = task;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getTaskBegin() {
+		return taskBegin;
+	}
+
+	public void setTaskBegin(Date taskBegin) {
+		this.taskBegin = taskBegin;
+	}
+
+	public Date getTaskEnd() {
+		return taskEnd;
+	}
+
+	public void setTaskEnd(Date taskEnd) {
+		this.taskEnd = taskEnd;
+	}
+
+	public String getRequestParams() {
+		return requestParams;
+	}
+
+	public void setRequestParams(String requestParams) {
+		this.requestParams = requestParams;
+	}
+
+	public String getResponseParams() {
+		return responseParams;
+	}
+
+	public void setResponseParams(String responseParams) {
+		this.responseParams = responseParams;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
 	
 }
