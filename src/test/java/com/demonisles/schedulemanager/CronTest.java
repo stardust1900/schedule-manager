@@ -8,7 +8,7 @@ import org.springframework.scheduling.support.CronExpression;
 public class CronTest {
 
 	public static void main(String[] args) {
-		String cron = "* 1 * ? * 2";
+		String cron = "*/10 * * * * ? ";
 		CronExpression ce = CronExpression.parse(cron);
 		
 		ZonedDateTime next = ce.next(ZonedDateTime.now());

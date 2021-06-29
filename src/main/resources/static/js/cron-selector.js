@@ -146,6 +146,9 @@
                 value += ('-' + end)
             }
             if(distance){
+            	if(!value){ //spring cron中需要加*
+            		value = "*";
+            	}
                 value += ('/' + distance);
             }
             return value || '*';

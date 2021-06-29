@@ -62,18 +62,29 @@ public class TaskController {
 		if(task.getTaskId() == 0) {
 			task.setCreatedBy(user.getUsername());
 			task.setCreatedTime(new Date());
+			taskService.saveTask(task);
 		}else {
-			task.setUpdatedBy(user.getUsername());
-			task.setUpdatedTime(new Date());
+			Task oldTask = taskService.getTaskById(task.getTaskId());
+			
+			oldTask.setTaskName(task.getTaskName());
+			oldTask.setTaskDesc(task.getTaskDesc());
+			oldTask.setTaskType(task.getTaskType());
+			oldTask.setCron(task.getCron());
+			oldTask.setParams(task.getParams());
+			
+			oldTask.setUpdatedBy(user.getUsername());
+			oldTask.setUpdatedTime(new Date());
+			
+			taskService.saveTask(oldTask);
 		}
-		taskService.saveTask(task);
+		
 		return "redirect:/";
 	}
 	
 	@RequestMapping(value="/testTask",method= {RequestMethod.POST})
 	@ResponseBody
 	public String testTask(Task task) {
-		return testService.httpExc(task);
+		return testService.httpExc(task).get("msg");
 	}
 	
 	@PostMapping("/pauseTask")

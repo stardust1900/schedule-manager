@@ -1,10 +1,12 @@
 package com.demonisles.schedulemanager.service.impl;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.CronTask;
@@ -14,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.demonisles.schedulemanager.domain.Task;
+import com.demonisles.schedulemanager.repository.TaskRepository;
 import com.demonisles.schedulemanager.service.ScheduleService;
+import com.demonisles.schedulemanager.service.TaskExcService;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigurer {
@@ -24,6 +28,12 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 	private ScheduledTaskRegistrar taskRegistrar;
 	
 	private Map<Long,ScheduledTask> taskMap = new ConcurrentHashMap<Long,ScheduledTask>();
+	
+	@Autowired
+	private TaskRepository taskRepo;
+	
+	@Autowired
+	private TaskExcService excService;
 	
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -96,6 +106,14 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 		@Override
 		public void run() {
 			log.info("task:{}",task);
+			Map<String,String> result = excService.httpExc(task);
+			if("success".equals(result.get("code"))) {
+				task.setLastExeStatus("1");
+			}else {
+				task.setLastExeStatus("0");
+			}
+			task.setLastExeTime(new Date());
+			taskRepo.save(task);
 		}
 		
 	}

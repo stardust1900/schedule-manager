@@ -20,7 +20,6 @@ import org.thymeleaf.util.StringUtils;
 
 import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.service.TaskExcService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -49,7 +48,7 @@ public class TaskExcServiceImpl implements TaskExcService {
 	}
 
 	@Override
-	public String httpPost(String url, Map<String, String> uriVariables, String contentType) {
+	public String httpPost(String url, Map<String, String> uriVariables, String contentType) throws Exception {
 		if (MediaType.APPLICATION_FORM_URLENCODED_VALUE.equals(contentType)) {
 			MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<String, Object>();
 			for (Entry<String, String> entry : uriVariables.entrySet()) {
@@ -63,13 +62,11 @@ public class TaskExcServiceImpl implements TaskExcService {
 			headers.add("Charset", "UTF-8");
 			headers.add("Content-Length", "0");
 			ObjectMapper mapper = new ObjectMapper();
-			try {
-				String jsonParameter = mapper.writeValueAsString(uriVariables);
-				HttpEntity<String> entity = new HttpEntity<String>(jsonParameter, headers);
-				return restTemplate.postForObject(url, entity, String.class);
-			} catch (JsonProcessingException e) {
-				return e.getMessage();
-			}
+			
+			String jsonParameter = mapper.writeValueAsString(uriVariables);
+			HttpEntity<String> entity = new HttpEntity<String>(jsonParameter, headers);
+			return restTemplate.postForObject(url, entity, String.class);
+			
 			
 		} else {
 			return "unsupported contentType";
@@ -77,7 +74,8 @@ public class TaskExcServiceImpl implements TaskExcService {
 	}
 
 	@Override
-	public String httpExc(Task task) {
+	public Map<String,String> httpExc(Task task) {
+		Map<String,String> result = new HashMap<String,String>();
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			JsonNode params = mapper.readTree(task.getParams());
@@ -99,15 +97,25 @@ public class TaskExcServiceImpl implements TaskExcService {
 				}
 			}
 			if ("get".equalsIgnoreCase(method)) {
-				return httpGet(url, uriVariables);
+				String getResult = httpGet(url, uriVariables);
+				result.put("code", "success");
+				result.put("msg", getResult);
+				return result;
 			} else if ("post".equalsIgnoreCase(method)) {
-				return httpPost(url, uriVariables, contentType);
+				String postResult = httpPost(url, uriVariables, contentType);
+				result.put("code", "success");
+				result.put("msg", postResult);
+				return result;
 			} else {
-				return "unsupported method";
+				result.put("code", "fail");
+				result.put("msg", "unsupported method");
+				return result;
 			}
-		} catch (JsonProcessingException e) {
-			log.error("JsonProcessingException", e);
-			return e.getMessage();
+		} catch (Exception e) {
+			log.error("httpExc error", e);
+			result.put("code", "fail");
+			result.put("msg", e.getMessage());
+			return result;
 		}
 
 	}

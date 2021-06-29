@@ -1,5 +1,6 @@
 package com.demonisles.schedulemanager.domain;
 
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -89,7 +90,7 @@ public class Task {
 	@Column(name = "last_exe_time")
 	private Date lastExeTime;
 	/**
-	 * 上次执行状态
+	 * 上次执行状态 0：失败 1:成功
 	 */
 	@Column(name = "last_exe_status")
 	private String lastExeStatus;
@@ -173,13 +174,13 @@ public class Task {
 		this.lastExeStatus = lastExeStatus;
 	}
 	
-	public Date getNextExcTime() {
+	public String getNextExcTime() {
 		if(StringUtils.hasLength(cron)) {
 			try {
 				CronExpression ce = CronExpression.parse(cron);
-				
 				ZonedDateTime next = ce.next(ZonedDateTime.now());
-				return Date.from(next.toInstant());
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				return sdf.format(Date.from(next.toInstant()));
 			}catch(Exception e) {
 				return null;
 			}

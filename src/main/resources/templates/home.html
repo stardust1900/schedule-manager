@@ -94,8 +94,8 @@
         <td th:text="${task.taskName}"></td>
         <td th:text="${task.taskType}"></td>
         <td th:text="${task.cron}"></td>
-        <td th:text="${task.taskState}"></td>
-        <td></td>
+        <td th:text="${task.taskState=='1'?'启动':'暂停'}"></td>
+        <td th:text="${task.lastExeTime}"></td>
         <td th:text="${task.nextExcTime}"></td>
         <td>
         <button type="button" class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="bottom" title="暂停任务" th:if="${task.taskState == '1'}" th:onclick="pauseTask([[${task.taskId}]],[[${task.taskName}]])" >

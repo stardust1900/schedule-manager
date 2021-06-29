@@ -6,10 +6,9 @@ import com.demonisles.schedulemanager.domain.Task;
 
 public interface TaskExcService {
 	
-	String httpExc(Task task);
+	Map<String,String> httpExc(Task task);
 	
-	String httpGet(String url, Map<String, String> uriVariables);
+	String httpGet(String url, Map<String, String> uriVariables) throws Exception;
 	
-	String httpPost(String url, Map<String, String> uriVariables, String contentType);
-
+	String httpPost(String url, Map<String, String> uriVariables, String contentType) throws Exception;
 }
