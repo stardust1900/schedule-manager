@@ -6,5 +6,5 @@ import org.springframework.data.domain.Pageable;
 import com.demonisles.schedulemanager.domain.TaskLog;
 
 public interface TaskLogService {
-	Page<TaskLog> listTask(Long taskId, Pageable page);
+	Page<TaskLog> listTask(Long taskId,String taskDate, Pageable page);
 }

@@ -2,6 +2,7 @@ package com.demonisles.schedulemanager.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -90,6 +91,16 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public Task getTaskById(Long taskId) {
 		return taskRepository.findById(taskId).get();
+	}
+
+	@Override
+	public List<Task> findAll() {
+		Iterable<Task> tasks = taskRepository.findAll();
+		List<Task> result = new ArrayList<Task>();
+		for(Task t: tasks) {
+			result.add(t);
+		}
+		return result;
 	}
 
 }
