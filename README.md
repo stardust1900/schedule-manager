@@ -26,12 +26,20 @@
 
 #### 界面截图
 
-![登录](https://wx1.sinaimg.cn/mw2000/65d0eb44gy1gs2mmcoc31j20md0apq3b.jpg)
+**登录**
 
-![任务列表](https://wx1.sinaimg.cn/mw2000/65d0eb44gy1gs2mmq36ryj20xm0ej0tv.jpg)
+![登录](https://gitee.com/wangyidao/schedule-manager/raw/master/1.jpg)
 
-![任务日志](https://wx1.sinaimg.cn/mw2000/65d0eb44gy1gs2mn3poqqj20xl0e7tac.jpg)
+**任务列表**
 
-![增加任务](https://wx1.sinaimg.cn/mw2000/65d0eb44gy1gs2mo5sgi9j20xh0ijq4b.jpg)
+![任务列表](https://gitee.com/wangyidao/schedule-manager/raw/master/2.jpg)
+
+**任务日志**
+
+![任务日志](https://gitee.com/wangyidao/schedule-manager/raw/master/3.jpg)
+
+**增加任务**
+
+![增加任务](https://gitee.com/wangyidao/schedule-manager/raw/master/4.jpg)
 
 
