@@ -83,7 +83,14 @@ public class TaskController {
 	@RequestMapping(value="/testTask",method= {RequestMethod.POST})
 	@ResponseBody
 	public String testTask(Task task) {
-		return taskExcService.httpExc(task).get("msg");
+		if("http".equals(task.getTaskType())) {
+			return taskExcService.httpExc(task).get("msg");
+		}else if("shell".equals(task.getTaskType())) {
+			return taskExcService.shellExc(task).get("msg");
+		}else {
+			return null;
+		}
+		
 	}
 	
 	@PostMapping("/pauseTask")
@@ -139,9 +146,16 @@ public class TaskController {
 	public String excTask(Long taskId) {
 		Task task = taskService.getTaskById(taskId);
 		task.setLastExeTime(new Date());
-		Map<String,String> result = taskExcService.httpExc(task);
-		log.info("httpExc result:{}",result);
-		String retCode = result.get("code");
+		Map<String,String> result = null;
+		if("http".equals(task.getTaskType())) {
+			result = taskExcService.httpExc(task);
+			log.info("httpExc result:{}",result);
+		}else if("shell".equals(task.getTaskType())) {
+			result = taskExcService.shellExc(task);
+			log.info("shellExc result:{}",result);
+		}
+		
+		String retCode = result==null ? "0" : result.get("code");
 		if("success".equals(retCode)) {
 			task.setLastExeStatus("1");//成功
 		}else {

@@ -22,24 +22,24 @@ import com.demonisles.schedulemanager.service.TaskExcService;
 
 @Service
 public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigurer {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(ScheduleServiceImpl.class);
-	
+
 	private ScheduledTaskRegistrar taskRegistrar;
-	
-	private Map<Long,ScheduledTask> taskMap = new ConcurrentHashMap<Long,ScheduledTask>();
-	
+
+	private Map<Long, ScheduledTask> taskMap = new ConcurrentHashMap<Long, ScheduledTask>();
+
 	@Autowired
 	private TaskRepository taskRepo;
-	
+
 	@Autowired
 	private TaskExcService excService;
-	
+
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-		log.info("taskRegistrar:{}",taskRegistrar);
-//		TaskScheduler taskScheduler = taskRegistrar.getScheduler();
-//		log.info("TaskScheduler:{}",taskScheduler);
+		log.info("taskRegistrar:{}", taskRegistrar);
+		// TaskScheduler taskScheduler = taskRegistrar.getScheduler();
+		// log.info("TaskScheduler:{}",taskScheduler);
 		// 创建一个线程池调度器
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 		// 设置线程池容量
@@ -52,75 +52,79 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 		scheduler.setWaitForTasksToCompleteOnShutdown(true);
 		// 设置当任务被取消的同时从当前调度器移除的策略
 		scheduler.setRemoveOnCancelPolicy(true);
-		// explicitly call scheduler.initialize() after setting all properties but before returning the scheduler.
+		// explicitly call scheduler.initialize() after setting all properties but
+		// before returning the scheduler.
 		scheduler.initialize();
-		//设置任务注册器的调度器
+		// 设置任务注册器的调度器
 		taskRegistrar.setScheduler(scheduler);
 		this.taskRegistrar = taskRegistrar;
-		
-		
-//		CronTask cronTask = new CronTask(null,"");
-//		taskRegistrar.addCronTask(cronTask);
-		
-//		cronTask.getTrigger().nextExecutionTime(triggerContext)
-		//taskRegistrar.addCronTask(null, "");
-		//taskScheduler.
+
+		// CronTask cronTask = new CronTask(null,"");
+		// taskRegistrar.addCronTask(cronTask);
+
+		// cronTask.getTrigger().nextExecutionTime(triggerContext)
+		// taskRegistrar.addCronTask(null, "");
+		// taskScheduler.
 	}
+
 	@Override
 	public void scheduleCronTask(Task task) {
-		if(task != null && StringUtils.hasLength(task.getCron()))  {
-			if(taskMap.containsKey(task.getTaskId())) {
+		if (task != null && StringUtils.hasLength(task.getCron())) {
+			if (taskMap.containsKey(task.getTaskId())) {
 				taskMap.get(task.getTaskId()).cancel();
 				taskMap.remove(task.getTaskId());
 			}
-			if("1".equals(task.getTaskState())) {
-				if("http".equals(task.getTaskType()) ) {
-					CronTask  cronTask = new CronTask(new HttpWorker(task),task.getCron());
+			if ("1".equals(task.getTaskState())) {
+				if ("http".equals(task.getTaskType()) || "shell".equals(task.getTaskType())) {
+					CronTask cronTask = new CronTask(new TaskWorker(task), task.getCron());
 					ScheduledTask sTask = taskRegistrar.scheduleCronTask(cronTask);
-					if(sTask != null) {
+					if (sTask != null) {
 						taskMap.put(task.getTaskId(), sTask);
-					}else {
+					} else {
 						log.error("schedule task failed :{}", task);
 					}
-				}else if("shell".equals(task.getTaskType())) {
+				} else if ("sql".equals(task.getTaskType())) {
 					log.error("schedule task failed :{}", task);
-				}else if("sql".equals(task.getTaskType())) {
-					log.error("schedule task failed :{}", task);
-				}else {
+				} else {
 					log.error("schedule task failed :{}", task);
 				}
 			}
-		}else {
+		} else {
 			log.error("schedule task failed :{}", task);
 		}
 	}
-	
-	class  HttpWorker implements Runnable {
+
+	class TaskWorker implements Runnable {
 
 		private Task task;
-		
-		public HttpWorker(Task task){
+
+		public TaskWorker(Task task) {
 			this.task = task;
 		}
-		
+
 		@Override
 		public void run() {
-			log.info("task:{}",task);
-			Map<String,String> result = excService.httpExc(task);
-			if("success".equals(result.get("code"))) {
-				task.setLastExeStatus("1");
-			}else {
+			log.info("task:{}", task);
+			Map<String, String> result = null;
+			if ("http".equals(task.getTaskType())) {
+				result = excService.httpExc(task);
+			} else if ("shell".equals(task.getTaskType())) {
+				result = excService.shellExc(task);
+			}
+			if (result == null || !"success".equals(result.get("code"))) {
 				task.setLastExeStatus("0");
+			} else {
+				task.setLastExeStatus("1");
 			}
 			task.setLastExeTime(new Date());
 			taskRepo.save(task);
 		}
-		
+
 	}
 
 	@Override
 	public void removeTask(Long taskId) {
-		if(taskMap.containsKey(taskId)) {
+		if (taskMap.containsKey(taskId)) {
 			taskMap.get(taskId).cancel();
 			taskMap.remove(taskId);
 		}

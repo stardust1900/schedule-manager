@@ -100,6 +100,14 @@
 		  
 		  </div>
 		  
+		  <div id="shellParams">
+		  	<div class="form-group" id="shell_args_div">
+			    <label for="shell_args" class="col-sm-2 control-label">命令参数</label>
+			    <div class="col-sm-10">
+			      <textarea class="form-control" rows="3" id="shell_args"></textarea>
+			    </div>
+			  </div>
+		  </div>
 		  <div class="form-group">
 		    <div class="col-sm-offset-2 col-sm-10">
 		      <button type="button" class="btn btn-default" id="confirm">确定</button>
@@ -141,19 +149,30 @@
 
 <script>
      $(function(){
-    	 if('http' != $("#taskType").val()){
-    		 $("#httpParams").hide();
-    	 }else{
-    		 var taskParams = $("#params").val();
-    		 if(taskParams){
-    			 var json = JSON.parse(taskParams);
-        		 console.log(json);
-        		 $("#http_method").val(json['method']);
-        		 $("#http_url").val(json['url']);
-        		 $("#http_contentType").val(json['contentType']);
-        		 $("#http_args").val(json['args']);
-    		 }
-    		 
+		 var taskType = $("#taskType").val();
+		 console.log(taskType);
+    	 switch(taskType) {
+	    	 case 'http':
+	    		 var taskParams = $("#params").val();
+	    		 if(taskParams){
+	    			 var json = JSON.parse(taskParams);
+	        		 console.log(json);
+	        		 $("#http_method").val(json['method']);
+	        		 $("#http_url").val(json['url']);
+	        		 $("#http_contentType").val(json['contentType']);
+	        		 $("#http_args").val(json['args']);
+	    		 }
+	    		 $("#shellParams").hide();
+	    		 break;
+	    	 case 'shell':
+	    		 $("#httpParams").hide();
+	    		 console.log($("#params").val());
+	    		 $("#shell_args").val($("#params").val())
+	    		 break;
+	    	 default :
+	    		 $("#httpParams").hide();
+	    		 $("#shellParams").hide();
+	    		 break;
     	 }
     	 
     	 $("#testResult").hide();
@@ -184,11 +203,16 @@
      });
      
      $("#taskType").change(function(){
+    	 $("#taskTypeDiv").removeClass("has-error");
     	 if('http' == $("#taskType").val()) {
+    		 $("#shellParams").hide();
     		 $("#httpParams").show();
-    		 $("#taskTypeDiv").removeClass("has-error");
+    	 }else if('shell' == $("#taskType").val()){
+    		 $("#httpParams").hide();
+    		 $("#shellParams").show();
     	 }else{
     		 $("#httpParams").hide();
+    		 $("#shellParams").hide();
     	 }
      });
      
@@ -203,6 +227,9 @@
 	    		 break;
 	    	 case 'http':
 	    		 httpTest();
+	    		 break;
+	    	 case 'shell':
+	    		 shellTest();
 	    		 break;
     	 }
     	 
@@ -280,6 +307,26 @@
      	 });
      }
      
+     function shellTest() {
+    	var token = $("meta[name='_csrf']").attr("content");
+      	var header = $("meta[name='_csrf_header']").attr("content");
+      	$(document).ajaxSend(function(event, jqxhr, settings) {
+      		jqxhr.setRequestHeader(header, token);
+      	});
+      	
+      	if(''==$("#shell_args").val()){
+      		 $("#shell_args_div").addClass("has-error");
+    		 $("#shell_args_div").focus();
+    		 return;
+      	}
+      	
+      	 $.post('/testTask',{taskName:$("#taskName").val(),taskType:$("#taskType").val(),params:$("#shell_args").val()},function(data){
+      		console.log(data); 
+      		$("#testResult").show();
+      		$("#resultContent").text(data);
+      	 });
+     }
+     
      $("#testResultClose").click(function(){
     	 $("#testResult").hide();
      });
@@ -307,6 +354,14 @@
     		 $("#params").val(JSON.stringify(httpParams));
     		 console.log($("#params").val());
     		 //return;
+    		 $("#taskForm").submit();
+    	 }else if('shell' == $("#taskType").val()){
+    		 if(''==$("#shell_args").val()){
+    			 $("#shell_args_div").addClass("has-error");
+        		 $("#shell_args_div").focus();
+        		 return;
+          	 }
+    		 $("#params").val($("#shell_args").val());
     		 $("#taskForm").submit();
     	 }
     	 

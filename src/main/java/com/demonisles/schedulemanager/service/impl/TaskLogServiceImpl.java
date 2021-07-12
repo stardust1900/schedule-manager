@@ -3,7 +3,6 @@ package com.demonisles.schedulemanager.service.impl;
 import java.util.ArrayList;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
@@ -21,7 +20,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.domain.TaskLog;
 import com.demonisles.schedulemanager.repository.TaskLogRepository;
 import com.demonisles.schedulemanager.service.TaskLogService;
