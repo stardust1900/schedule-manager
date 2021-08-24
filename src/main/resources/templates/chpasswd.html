@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="https://www.thymeleaf.org"
+	xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>修改密码</title>
+	<script th:src="@{/js/jquery-3.6.0.min.js}"></script>
+    <script th:src="@{/js/bootstrap.min.js}"></script>
+	<link rel="stylesheet" type="text/css" th:href="@{/css/bootstrap.min.css}" />
+	<style type="text/css">
+	body {
+	  padding-top: 40px;
+	  padding-bottom: 40px;
+	}
+	</style>
+</head>
+<body>
+    <div class="container">
+    <div th:if="${error}" class="alert alert-warning alert-dismissible fade in" role="alert" th:text="${error}">
+	    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	</div>
+    
+    <form class="form-horizontal" th:action="@{/changePasswd}" method="post" id="chPasswdForm">
+    
+	    <div class="form-group" id="oldpasswordDiv">
+			<label for="password" class="col-sm-2 control-label">原密码</label>
+			<div class="col-sm-6">
+				<input type="password" class="form-control" id="oldpassword"
+					name="oldpassword" placeholder="请输入原密码" readonly="readonly">
+			</div>
+		</div>
+		 <div class="form-group" id="newpasswordDiv">
+			<label for="password" class="col-sm-2 control-label">新密码</label>
+			<div class="col-sm-6">
+				<input type="password" class="form-control" id="newpassword"
+					name="newpassword" placeholder="请输入新密码">
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				 <button type="button" class="btn btn-default" id="confirm">确定</button>
+		      	 <a href="/" class="btn btn-default" role="button">取消</a>
+			</div>
+		</div>
+    
+    </form>
+    
+    </div>
+</body>
+<script type="text/javascript">
+	$().ready(setTimeout(function(){
+		$("#oldpassword").removeAttr("readonly");
+	},200));
+	
+	$("#confirm").click(function(){
+		 if('' == $("#oldpassword").val()) {
+    		 $("#oldpasswordDiv").addClass("has-error");
+    		 $("#oldpassword").focus();
+    		 return;
+    	 }
+		 if('' == $("#newpassword").val()) {
+    		 $("#newpasswordDiv").addClass("has-error");
+    		 $("#newpassword").focus();
+    		 return;
+    	 }
+		 
+		 $("#chPasswdForm").submit();
+	});
+	$("#oldpassword").change(function(){
+		 $("#oldpasswordDiv").removeClass("has-error");
+	});
+	
+	$("#newpassword").change(function(){
+		$("#newpasswordDiv").removeClass("has-error");
+	});
+	
+</script>
+</html>

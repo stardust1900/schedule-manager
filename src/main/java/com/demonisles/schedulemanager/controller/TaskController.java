@@ -1,7 +1,11 @@
 package com.demonisles.schedulemanager.controller;
 
 
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -10,10 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -163,6 +169,31 @@ public class TaskController {
 		}
 		taskService.saveTask(task);
 		return result.get("code");
+	}
+	
+	@GetMapping("/nextExcTimes")
+	@ResponseBody
+	public Object nextExcTimes(String cron,Model model) {
+		//model.addAttribute("task", new Task());
+		List<String> result = new ArrayList<String>();
+		if(StringUtils.hasLength(cron)) {
+			try {
+				CronExpression ce = CronExpression.parse(cron);
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				ZonedDateTime archTime = ZonedDateTime.now();
+				int count = 0;
+				while(count < 5) {
+					ZonedDateTime next = ce.next(archTime);
+					result.add(sdf.format(Date.from(next.toInstant())));
+					archTime = next;
+					count++; 
+				}
+				
+			}catch(Exception e) {
+				result.add(e.getMessage());
+			}
+		}
+		return result;
 	}
 	
 }
