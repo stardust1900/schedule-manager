@@ -21,7 +21,7 @@
 
 #### 使用说明
 
-1.  访问 系统主页 http://localhost:8080   用户名/密码：user/password
+1.  访问 系统主页 http://localhost:8080   用户名/密码 在启动日志中获取
 2.  访问 H2 管理界面 http://localhost:8080/h2-console   默认密码 sa/sa
 3.  动态更新日志 curl http://localhost:8080/logLevel/{DEBUG|INFO|WARN|ERROR}
 
