@@ -23,6 +23,7 @@
 
 1.  访问 系统主页 http://localhost:8080   用户名/密码：user/password
 2.  访问 H2 管理界面 http://localhost:8080/h2-console   默认密码 sa/sa
+3.  动态更新日志 curl http://localhost:8080/logLevel/{DEBUG|INFO|WARN|ERROR}
 
 #### 界面截图
 
@@ -43,3 +44,10 @@
 ![增加任务](https://gitee.com/wangyidao/schedule-manager/raw/master/4.jpg)
 
 
+**更新日志**
+
+2023-03-10
+
+- 增加动态更新日志功能
+- 增加sql语句执行任务
+- 增加随机生成初始密码

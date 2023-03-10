@@ -49,4 +49,11 @@ public interface TaskExcService {
 	 * @return
 	 */
 	Map<String, String> shellExc(Task task);
+	/**
+	 * sql 任务执行
+	 * 
+	 * @param task
+	 * @return
+	 */
+	Map<String, String> sqlExc(Task task);
 }

@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContexts;
+import org.passay.CharacterRule;
+import org.passay.EnglishCharacterData;
+import org.passay.PasswordGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,6 +35,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
+import com.demonisles.schedulemanager.controller.TaskController;
 import com.demonisles.schedulemanager.domain.Role;
 import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.domain.User;
@@ -40,7 +47,7 @@ import com.demonisles.schedulemanager.service.ScheduleService;
 @SpringBootApplication
 @EnableScheduling
 public class ScheduleManagerApplication {
-
+	private static final Logger log = LoggerFactory.getLogger(TaskController.class);
 	public static void main(String[] args) {
 		SpringApplication.run(ScheduleManagerApplication.class, args);
 	}
@@ -50,15 +57,25 @@ public class ScheduleManagerApplication {
 			TaskRepository taskRepo, ScheduleService scheduleService) {
 		
 		return (args)->{
-//			userRepo.deleteAll();
-//			roleRepo.deleteAll();
+			//userRepo.deleteAll();
+			//roleRepo.deleteAll();
 			Iterable<User> users = userRepo.findAll();
 			//初始化用户
 			if(users == null || !users.iterator().hasNext()) {
 				PasswordEncoder pe = passwordEncoder();
+				PasswordGenerator generator = new PasswordGenerator();
+				List<CharacterRule> rules = Arrays.asList(
+						  // at least one upper-case character
+						  new CharacterRule(EnglishCharacterData.UpperCase, 1),
+						  // at least one lower-case character
+						  new CharacterRule(EnglishCharacterData.LowerCase, 1),
+						  // at least one digit character
+						  new CharacterRule(EnglishCharacterData.Digit, 1));
+				String password = generator.generatePassword(8, rules);
 				User user = new User();
-				user.setUserName("user");
-				user.setPassword(pe.encode("password"));
+				user.setUserName("admin");
+				log.warn("\n ###########\n 初始用户名:admin 密码:{}\n ###########\n",password);
+				user.setPassword(pe.encode(password));
 				
 				Role role = new Role();
 				role.setRoleKey("default");

@@ -108,6 +108,35 @@
 			    </div>
 			  </div>
 		  </div>
+		  
+		  <div id="sqlParams">
+		  	  <div class="form-group" id="jdbc_url_div">
+			    <label for="jdbc_url" class="col-sm-2 control-label">jdbc地址</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="jdbc_url" placeholder="jdbc地址">
+			    </div>
+			  </div>
+			  <div class="form-group" id="db_username_div">
+			    <label for="db_username" class="col-sm-2 control-label">数据库用户名</label>
+			    <div class="col-sm-10">
+			      <input type="text" class="form-control" id="db_username" placeholder="用户名">
+			    </div>
+			  </div>
+			  <div class="form-group" id="db_password_div">
+			    <label for="db_password" class="col-sm-2 control-label">数据库密码</label>
+			    <div class="col-sm-10">
+			      <input type="password" class="form-control" id="db_password" placeholder="密码">
+			    </div>
+			  </div>
+		  	  <div class="form-group" id="sql_div">
+			    <label for="sql" class="col-sm-2 control-label">sql语句</label>
+			    <div class="col-sm-10">
+			      <textarea class="form-control" rows="3" id="sql"></textarea>
+			    </div>
+			  </div>
+		  </div>
+		  
+		  
 		  <div class="form-group">
 		    <div class="col-sm-offset-2 col-sm-10">
 		      <button type="button" class="btn btn-default" id="confirm">确定</button>
@@ -171,15 +200,29 @@
 	        		 $("#http_args").val(json['args']);
 	    		 }
 	    		 $("#shellParams").hide();
+	    		 $("#sqlParams").hide();
 	    		 break;
 	    	 case 'shell':
 	    		 $("#httpParams").hide();
-	    		 console.log($("#params").val());
+	    		 $("#sqlParams").hide();
 	    		 $("#shell_args").val($("#params").val())
+	    		 break;
+	    	 case 'sql':
+	    		 $("#httpParams").hide();
+	    		 $("#shellParams").hide();
+	    		 var taskParams = $("#params").val();
+	    		 if(taskParams){
+	    			var json = JSON.parse(taskParams);
+	    		 	$("#jdbc_url").val(json['jdbcUrl']);
+	    		 	$("#db_username").val(json['username']);
+	    		 	$("#db_password").val(json['password']);
+	    		 	$("#sql").val(json['sql']);
+	    		 }
 	    		 break;
 	    	 default :
 	    		 $("#httpParams").hide();
 	    		 $("#shellParams").hide();
+	    		 $("#sqlParams").hide();
 	    		 break;
     	 }
     	 
@@ -243,13 +286,20 @@
     	 $("#taskTypeDiv").removeClass("has-error");
     	 if('http' == $("#taskType").val()) {
     		 $("#shellParams").hide();
+    		 $("#sqlParams").hide();
     		 $("#httpParams").show();
     	 }else if('shell' == $("#taskType").val()){
     		 $("#httpParams").hide();
+    		 $("#sqlParams").hide();
     		 $("#shellParams").show();
+    	 }else if('sql' == $("#taskType").val()){
+    		 $("#httpParams").hide();
+    		 $("#shellParams").hide();
+    		 $("#sqlParams").show();
     	 }else{
     		 $("#httpParams").hide();
     		 $("#shellParams").hide();
+    		 $("#sqlParams").hide();
     	 }
      });
      
@@ -267,6 +317,9 @@
 	    		 break;
 	    	 case 'shell':
 	    		 shellTest();
+	    		 break;
+	    	 case 'sql':
+	    		 sqlTest();
 	    		 break;
     	 }
     	 
@@ -364,6 +417,52 @@
       	 });
      }
      
+     function sqlValidate() {
+    	if(''==$("#jdbc_url").val()){
+      		$("#jdbc_url_div").addClass("has-error");
+    		 	$("#jdbc_url_div").focus();
+    		 	return false;
+      	}
+        if(''==$("#db_username").val()){
+      		$("#db_username_div").addClass("has-error");
+    		 	$("#db_username_div").focus();
+    		 	return false;
+      	}
+        if(''==$("#db_password").val()){
+      		$("#db_password_div").addClass("has-error");
+    		 	$("#db_password_div").focus();
+    		 	return false;
+      	}
+        if(''==$("#sql").val()){
+      		$("#sql_div").addClass("has-error");
+    		 	$("#sql_div").focus();
+    		 	return false;
+      	}
+        return true;
+     }
+     function sqlTest() {
+    	 if(!sqlValidate()) {
+    		 return;
+    	 }
+    	var token = $("meta[name='_csrf']").attr("content");
+       	var header = $("meta[name='_csrf_header']").attr("content");
+       	$(document).ajaxSend(function(event, jqxhr, settings) {
+       		jqxhr.setRequestHeader(header, token);
+       	});
+       	var sqlParams = {"jdbcUrl":$("#jdbc_url").val(),"username":$("#db_username").val(),"password":$("#db_password").val(),"sql":$("#sql").val()}
+       	$.post('/testTask',
+       			{
+       				taskName:$("#taskName").val(),
+       				taskType:$("#taskType").val(),
+       				params:JSON.stringify(sqlParams)
+       			},
+       		function(data){
+	      		console.log(data); 
+	      		$("#testResult").show();
+	      		$("#resultContent").text(data);
+      	 	});
+     }
+     
      $("#testResultClose").click(function(){
     	 $("#testResult").hide();
      });
@@ -399,6 +498,10 @@
         		 return;
           	 }
     		 $("#params").val($("#shell_args").val());
+    		 $("#taskForm").submit();
+    	 }else if('sql' == $("#taskType").val() && sqlValidate()){
+    		var sqlParams = {"jdbcUrl":$("#jdbc_url").val(),"username":$("#db_username").val(),"password":$("#db_password").val(),"sql":$("#sql").val()}
+    		 $("#params").val(JSON.stringify(sqlParams));
     		 $("#taskForm").submit();
     	 }
     	 

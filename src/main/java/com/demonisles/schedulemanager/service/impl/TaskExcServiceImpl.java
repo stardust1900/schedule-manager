@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -172,6 +174,29 @@ public class TaskExcServiceImpl implements TaskExcService {
 			IOUtils.closeQuietly(errorBr);
 		}
 
+		return result;
+	}
+	
+	@Override
+	public Map<String, String> sqlExc(Task task) {
+		Map<String, String> result = new HashMap<>();
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			JsonNode params = mapper.readTree(task.getParams());
+			String jdbcUrl = params.get("jdbcUrl").asText();
+			String username = params.get("username").asText();
+			String password = params.get("password").asText();
+			String sql = params.get("sql").asText();
+			DriverManagerDataSource dataSource = new DriverManagerDataSource(jdbcUrl,username,password);
+			JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+			jdbcTemplate.execute(sql);
+			result.put("code", "success");
+			result.put("msg", "finish");
+		} catch (Exception e) {
+			log.error("sqlExc error", e);
+			result.put("code", "fail");
+			result.put("msg", e.getMessage());
+		}
 		return result;
 	}
 

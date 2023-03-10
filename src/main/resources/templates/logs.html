@@ -50,6 +50,7 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
             <li><a href="#" id="logout">登出</a></li>
+            </ul>
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
       </nav>
@@ -79,6 +80,24 @@
 	      </form>
 	      </div>
       </div>
+       
+      <div class="panel panel-default">
+		  <div class="panel-body">
+		      <form class="form-inline" method="post" th:action="@{/clearLogs}" id="clearForm">
+		       <div class="form-group">
+	      	    <label for="clearDate" class="control-label">清理日期</label>
+                <div class="input-group date form_date" data-date="" data-date-format="yyyy-mm-dd" data-link-field="clearDate" data-link-format="yyyy-mm-dd">
+                    <input class="form-control" size="16" type="text" id="clearDate" name="clearDate" th:value="${clearDate}" readonly>
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
+					<span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+	      	 </div>
+	      	 <div class="form-group">
+	      	  <button id="clearbutton" class="btn btn-primary">清理</button>
+			 </div>
+		     </form>
+	      </div>
+	  </div>
       
    	  <div class="panel panel-default">
 	  <!-- Table -->
@@ -89,7 +108,6 @@
         <th>执行结果</th>
         <th>执行开始时间</th>
         <th>执行结束时间</th>
-        <th>操作</th>
       </tr>
        <tr th:each="log : ${logs.content}" th:class="${log.status == '0'?'danger':''}">
        	<td th:text="${log.task.taskName}"></td>
@@ -97,7 +115,6 @@
        	<td th:text="${log.status=='1'?'成功':'失败'}"></td>
        	<td th:text="${log.taskBegin}"></td>
        	<td th:text="${log.taskEnd}"></td>
-       	<td></td>
        </tr>
 	  </table>
 	  </div>
@@ -165,6 +182,14 @@
     	$("#pageIndex").val(pageIndex);
     	$("#queryForm").submit();
     }
+    
+    $("#clearbutton").click(function(){
+    	if(''==$("#clearDate").val()){
+    		alert('请选择清理日期');
+    		return;
+    	}
+    	$("#clearForm").submit();
+    });
     </script>
 </html>
     

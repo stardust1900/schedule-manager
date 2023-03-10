@@ -75,7 +75,7 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 				taskMap.remove(task.getTaskId());
 			}
 			if ("1".equals(task.getTaskState())) {
-				if ("http".equals(task.getTaskType()) || "shell".equals(task.getTaskType())) {
+				if ("http".equals(task.getTaskType()) || "shell".equals(task.getTaskType()) || "sql".equals(task.getTaskType()) ) {
 					CronTask cronTask = new CronTask(new TaskWorker(task), task.getCron());
 					ScheduledTask sTask = taskRegistrar.scheduleCronTask(cronTask);
 					if (sTask != null) {
@@ -83,8 +83,6 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 					} else {
 						log.error("schedule task failed :{}", task);
 					}
-				} else if ("sql".equals(task.getTaskType())) {
-					log.error("schedule task failed :{}", task);
 				} else {
 					log.error("schedule task failed :{}", task);
 				}
@@ -110,6 +108,8 @@ public class ScheduleServiceImpl implements ScheduleService, SchedulingConfigure
 				result = excService.httpExc(task);
 			} else if ("shell".equals(task.getTaskType())) {
 				result = excService.shellExc(task);
+			} else if ("sql".equals(task.getTaskType())) {
+				result = excService.sqlExc(task);
 			}
 			if (result == null || !"success".equals(result.get("code"))) {
 				task.setLastExeStatus("0");
