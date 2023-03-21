@@ -57,8 +57,9 @@ public class ScheduleManagerApplication {
 			TaskRepository taskRepo, ScheduleService scheduleService) {
 		
 		return (args)->{
-			//userRepo.deleteAll();
-			//roleRepo.deleteAll();
+			
+//			userRepo.deleteAll();
+//			roleRepo.deleteAll();
 			Iterable<User> users = userRepo.findAll();
 			//初始化用户
 			if(users == null || !users.iterator().hasNext()) {

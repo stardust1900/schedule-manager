@@ -8,6 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,7 @@ import com.demonisles.schedulemanager.service.TaskExcService;
 @Controller
 public class TaskController {
 	
-	public static final int pageSize = 5 ;
+	public static final Integer defaultPageSize = 5 ;
 	
 	private static final Logger log = LoggerFactory.getLogger(TaskController.class);
 
@@ -47,9 +49,20 @@ public class TaskController {
 	@GetMapping("/")
 	public String listTasks(@RequestParam(name = "taskName", required = false, defaultValue = "") String taskName,
 			@RequestParam(name = "taskType", required = false, defaultValue = "") String taskType,
-			@RequestParam(name = "pageIndex", required = true, defaultValue = "1") int pageIndex, Model model) {
+			@RequestParam(name = "pageIndex", required = true, defaultValue = "1") int pageIndex, 
+			@RequestParam(name = "pageSize", required = false) Integer pageSize,
+			Model model,
+			HttpSession session) {
 
 //        Sort sort = Sort.by("taskId");
+		if(pageSize == null) {
+			if(session.getAttribute("pageSize") == null) {
+				session.setAttribute("pageSize", defaultPageSize);
+			}
+			pageSize = (Integer) session.getAttribute("pageSize");
+		}else {
+			session.setAttribute("pageSize", pageSize);
+		}
 		Pageable page = PageRequest.of(pageIndex - 1, pageSize);
 		
 		Page<Task> tasks = taskService.listTask(taskName,taskType,page);
@@ -57,6 +70,7 @@ public class TaskController {
 		model.addAttribute("taskName", taskName);
 		model.addAttribute("taskType", taskType);
 		model.addAttribute("pageIndex", pageIndex);
+		model.addAttribute("pageSize", pageSize);
 		return "home";
 	}
 

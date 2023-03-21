@@ -7,7 +7,7 @@
         
     	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
     	<link th:href="@{/css/bootstrap-datetimepicker.min.css}" rel="stylesheet" type="text/css" />
-    	
+    	<link th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" />
     	<script th:src="@{/js/jquery-3.6.0.min.js}"></script>
     	<script th:src="@{/js/bootstrap.min.js}"></script>
     	<script th:src="@{/js/bootstrap-datetimepicker.min.js}"></script>
@@ -33,6 +33,17 @@
         .input-clear-a:hover{
             color: #d4d4d4;
         }
+        
+        .pull-left {
+		    float: left!important;
+		    margin-top: 10px;
+     		margin-bottom: 10px;
+		}
+        .pull-right {
+		    float: right!important;
+		    margin-top: 10px;
+     		margin-bottom: 10px;
+		}
     	
     	</style>
     </head>
@@ -59,6 +70,7 @@
 		  <div class="panel-body">
 	      <form class="form-inline" method="get" action="/listLogs" id="queryForm">
 	      	<input type="hidden" name="pageIndex" id="pageIndex" th:value="${1}">
+	      	<input type="hidden" name="pageSize" id="pageSize" th:value="${pageSize}">
 	      	 <div class="form-group">
 	      	    <label for="taskId" class="control-label">定时任务</label>
 		      	<select class="form-control" name="taskId" id="taskId">
@@ -118,45 +130,52 @@
        </tr>
 	  </table>
 	  </div>
-	  <nav aria-label="..." th:with="totalPages=${logs.totalPages==0}?1:${logs.totalPages},number=${logs.number+1},begin=${number >= 5 ? (number-2>=totalPages-5? totalPages-4 : number-2) :1}, end= ${begin+5 > totalPages ? totalPages: begin+4}">
-		  <ul class="pagination">
+	  
+	  <div class="bootstrap-table">
+	
+	<div class="fixed-table-pagination" >
+	  <div class="pull-left pagination-detail"><span class="pagination-info">
+	      共[[${logs.getTotalElements()}]]条记录
+	    </span>
+	    <div class="page-list">每页显示 <div class="btn-group dropdown dropup">
+		    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+		      <span class="page-size">
+		        [[${logs.size}]]
+		      </span>
+		      <span class="caret"></span>
+		    </button>
+		    <ul class="dropdown-menu" role="menu">
+		      <li role="menuitem" th:class="${logs.size == 5}?'active'" th:onclick="changePageSize('5')"><a href="#">5</a></li>
+		      <li role="menuitem" th:class="${logs.size == 10}?'active'" th:onclick="changePageSize('10')"><a href="#">10</a></li>
+		      <li role="menuitem" th:class="${logs.size == 25}?'active'" th:onclick="changePageSize('25')"><a href="#">25</a></li>
+		      <li role="menuitem" th:class="${logs.size == 50}?'active'" th:onclick="changePageSize('50')"><a href="#">50</a></li>
+		      <li role="menuitem" th:class="${logs.size == 100}?'active'" th:onclick="changePageSize('100')"><a href="#">100</a></li>
+		    </ul>
+		  </div> 条
+		</div>
+	  </div>
+	  <div class="pull-right pagination">
+	  <nav aria-label="..." th:with="totalPages=${logs.totalPages==0}?1:${logs.totalPages},number=${logs.number+1}">
+	    <ul class="pagination">
 		    <li th:class="${logs.first}? 'disabled'">
 		    <a href="#" aria-label="Previous" th:onclick="${logs.first}?'':'queryLogs('+${number-1}+')'"><span aria-hidden="true">&laquo;</span></a>
 		    </li>
-		    <li th:if="${begin >= 3}">
-		     <a href="#" th:text="1" th:onclick="queryLogs('1')">
-		     </a>
-		    </li>
-		    <li th:if="${begin >= 3}">
-		     <a href="#" >
-		     ...
-		     </a>
-		    </li>
-		    <li th:each="index : ${#numbers.sequence(begin,end)}" th:class="${index==number}?'active'">
+		    <li th:each="index : ${#numbers.sequence(1,totalPages)}" th:class="${index==number}?'active'">
 			    <a href="#" th:text="${index}" th:onclick="${index==number}?'':'queryLogs('+${index}+')'">
 			    <span class="sr-only" th:if="${index==number}">(current)</span>
 			    </a>
 		    </li>
-		    
-		    <li th:if="${totalPages-end >=2}">
-		     <a href="#" >
-		     ...
-		     </a>
-		    </li>
-		    
-		    <li th:if="${totalPages-end >=2}">
-		     <a href="#" th:text="${totalPages}" th:onclick="'queryLogs('+${totalPages}+')'">
-		     </a>
-		    </li>
-		    
-		    
 		    <li th:class="${logs.last}? 'disabled'">
 		      <a href="#" aria-label="Next" th:onclick="${logs.last}?'':'queryLogs('+${number+1}+')'">
 		        <span aria-hidden="true">&raquo;</span>
 		      </a>
 		    </li>
 		  </ul>
-	  </nav>
+		</nav>
+	  </div>
+	</div>
+	</div>
+	
     </div>
     <form th:action="@{/logout}" method="post" id="logoutForm">
     </form>
@@ -180,6 +199,10 @@
     
     function queryLogs(pageIndex) {
     	$("#pageIndex").val(pageIndex);
+    	$("#queryForm").submit();
+    }
+    function changePageSize(pageSize) {
+    	$("#pageSize").val(pageSize);
     	$("#queryForm").submit();
     }
     

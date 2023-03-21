@@ -7,6 +7,7 @@
         <script th:src="@{/js/jquery-3.6.0.min.js}"></script>
     	<script th:src="@{/js/bootstrap.min.js}"></script>
     	<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css" />
+    	<link th:href="@{/css/bootstrap-table.min.css}" rel="stylesheet" type="text/css" />
     	<style type="text/css">
     	body {
 		  padding-top: 20px;
@@ -28,6 +29,16 @@
         .input-clear-a:hover{
             color: #d4d4d4;
         }
+        .pull-left {
+		    float: left!important;
+		    margin-top: 10px;
+     		margin-bottom: 10px;
+		}
+        .pull-right {
+		    float: right!important;
+		    margin-top: 10px;
+     		margin-bottom: 10px;
+		}
     	
     	</style>
     </head>
@@ -56,6 +67,7 @@
 		  <div class="panel-body">
 		   <form class="form-inline" method="get" action="/" id="queryForm">
 		      <input type="hidden" name="pageIndex" id="pageIndex" th:value="${pageIndex}">
+		      <input type="hidden" name="pageSize" id="pageSize" th:value="${pageSize}">
 			  <div class="form-group has-feedback">
 			    <label for="taskName" class="control-label">任务名称</label>
 			    <input type="text" class="form-control input-content" id="taskName" name="taskName" placeholder="请输入任务名称" th:value="${taskName}">
@@ -121,8 +133,32 @@
       </tr>
 	  </table>
 	</div>
-	<nav aria-label="..." th:with="totalPages=${tasks.totalPages==0}?1:${tasks.totalPages},number=${tasks.number+1}">
-		  <ul class="pagination">
+	<div class="bootstrap-table">
+	
+	<div class="fixed-table-pagination" >
+	  <div class="pull-left pagination-detail"><span class="pagination-info">
+	      共[[${tasks.totalElements}]]条记录
+	    </span>
+	    <div class="page-list">每页显示 <div class="btn-group dropdown dropup">
+		    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+		      <span class="page-size">
+		        [[${tasks.size}]]
+		      </span>
+		      <span class="caret"></span>
+		    </button>
+		    <ul class="dropdown-menu" role="menu">
+		      <li role="menuitem" th:class="${tasks.size == 5}?'active'" th:onclick="changePageSize('5')"><a href="#">5</a></li>
+		      <li role="menuitem" th:class="${tasks.size == 10}?'active'" th:onclick="changePageSize('10')"><a href="#">10</a></li>
+		      <li role="menuitem" th:class="${tasks.size == 25}?'active'" th:onclick="changePageSize('25')"><a href="#">25</a></li>
+		      <li role="menuitem" th:class="${tasks.size == 50}?'active'" th:onclick="changePageSize('50')"><a href="#">50</a></li>
+		      <li role="menuitem" th:class="${tasks.size == 100}?'active'" th:onclick="changePageSize('100')"><a href="#">100</a></li>
+		    </ul>
+		  </div> 条
+		</div>
+	  </div>
+	  <div class="pull-right pagination">
+	  <nav aria-label="..." th:with="totalPages=${tasks.totalPages==0}?1:${tasks.totalPages},number=${tasks.number+1}">
+	    <ul class="pagination">
 		    <li th:class="${tasks.first}? 'disabled'">
 		    <a href="#" aria-label="Previous" th:onclick="${tasks.first}?'':'queryTasks('+${number-1}+')'"><span aria-hidden="true">&laquo;</span></a>
 		    </li>
@@ -137,7 +173,10 @@
 		      </a>
 		    </li>
 		  </ul>
-	  </nav>
+		</nav>
+	  </div>
+	</div>
+	</div>
     </div>
     
     <form th:action="@{/logout}" method="post" id="logoutForm">
@@ -162,7 +201,7 @@
 	</div><!-- /.modal -->
         
     </body>
-    <script>
+    <script th:inline="javascript">
 
     $(function() {
     	// Handler for .ready() called.
@@ -171,6 +210,8 @@
      	$(document).ajaxSend(function(event, jqxhr, settings) {
      		jqxhr.setRequestHeader(header, token);
      	});
+     	
+     	//var data = [[${tasks}]];
     });
     $("#logout").click(function(){
     	$("#logoutForm").submit();
@@ -178,6 +219,10 @@
     
     function queryTasks(pageIndex) {
     	$("#pageIndex").val(pageIndex);
+    	$("#queryForm").submit();
+    }
+    function changePageSize(pageSize) {
+    	$("#pageSize").val(pageSize);
     	$("#queryForm").submit();
     }
     function showModal(title,content,handler){
@@ -244,6 +289,6 @@
          	 });
     	});
     }
-
+	
     </script>
 </html>

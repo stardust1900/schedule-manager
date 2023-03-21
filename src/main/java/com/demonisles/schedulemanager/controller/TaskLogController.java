@@ -3,6 +3,8 @@ package com.demonisles.schedulemanager.controller;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +25,7 @@ import com.demonisles.schedulemanager.service.TaskService;
 @Controller
 public class TaskLogController {
 
-	public static final int pageSize = 5 ;
+	public static final Integer defaultPageSize = 5 ;
 	
 	@Autowired
 	private TaskLogService taskLogService;
@@ -36,9 +38,18 @@ public class TaskLogController {
 	@GetMapping("/listLogs")
 	public String listLogs(@RequestParam(name = "taskId", required = false ) Long taskId,
 			@RequestParam(name = "pageIndex", required = true, defaultValue = "1") int pageIndex, 
-			@RequestParam(name = "taskDate", required = false) String taskDate, Model model) {
+			@RequestParam(name = "pageSize", required = false) Integer pageSize,
+			@RequestParam(name = "taskDate", required = false) String taskDate, Model model, HttpSession session) {
 		if (!StringUtils.hasLength(taskDate)) {
 			taskDate = SDF.format(new Date());
+		}
+		if(pageSize == null) {
+			if(session.getAttribute("pageSize") == null) {
+				session.setAttribute("pageSize", defaultPageSize);
+			}
+			pageSize = (Integer) session.getAttribute("pageSize");
+		}else {
+			session.setAttribute("pageSize", pageSize);
 		}
 		Sort sort = Sort.by(Direction.DESC,"logId");
 		Pageable page = PageRequest.of(pageIndex - 1, pageSize,sort);
@@ -51,7 +62,7 @@ public class TaskLogController {
 		}else {
 			model.addAttribute("pageIndex", pageIndex);
 		}
-		
+		model.addAttribute("pageSize", pageSize);
 		model.addAttribute("taskId", taskId);
 		model.addAttribute("taskDate", taskDate);
 		model.addAttribute("tasks", taskService.findAll());
