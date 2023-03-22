@@ -95,7 +95,7 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public List<Task> findAll() {
-		Iterable<Task> tasks = taskRepository.findAll();
+		Iterable<Task> tasks = taskRepository.findAllNotDel();
 		List<Task> result = new ArrayList<Task>();
 		for(Task t: tasks) {
 			result.add(t);
