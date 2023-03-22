@@ -2,6 +2,7 @@ package com.demonisles.schedulemanager.service.impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +29,14 @@ import org.springframework.web.client.RestTemplate;
 
 import com.demonisles.schedulemanager.domain.Task;
 import com.demonisles.schedulemanager.service.TaskExcService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 @Service
 public class TaskExcServiceImpl implements TaskExcService {
@@ -135,45 +142,89 @@ public class TaskExcServiceImpl implements TaskExcService {
 			result.put("msg", "params is null");
 			return result;
 		}
-		String[] strArray = task.getParams().split(" ");
-		List<String> commands = new ArrayList<String>();
-		for (String s : strArray) {
-			if (StringUtils.hasLength(s)) {
-				commands.add(s);
-			}
-		}
-		log.info("commands:{}", commands);
-		ProcessBuilder pb = new ProcessBuilder(commands);
-		pb.redirectErrorStream(true);// 将错误流中的数据合并到输入流
-		BufferedReader br = null;
-		BufferedReader errorBr = null;
+		
+//		String[] strArray = task.getParams().split(" ");
+//		List<String> commands = new ArrayList<String>();
+//		for (String s : strArray) {
+//			if (StringUtils.hasLength(s)) {
+//				commands.add(s);
+//			}
+//		}
+//		log.info("commands:{}", commands);
+//		ProcessBuilder pb = new ProcessBuilder(commands);
+//		pb.redirectErrorStream(true);// 将错误流中的数据合并到输入流
+//		BufferedReader br = null;
+//		BufferedReader errorBr = null;
+//		try {
+//			Process p = pb.start();
+//			if (p.isAlive()) {
+//				p.waitFor();
+//			}
+//			br = new BufferedReader(new InputStreamReader(p.getInputStream(), "utf-8"));
+//			String line = null;
+//			StringBuffer sb = new StringBuffer();
+//			while ((line = br.readLine()) != null) {
+//				sb.append(line).append("\n");
+//			}
+//			result.put("code", "success");
+//			result.put("msg", sb.toString());
+//
+//		} catch (IOException e) {
+//			log.error("shellExc error", e);
+//			result.put("code", "fail");
+//			result.put("msg", e.getMessage());
+//		} catch (InterruptedException e) {
+//			log.error("shellExc error", e);
+//			result.put("code", "fail");
+//			result.put("msg", e.getMessage());
+//		} finally {
+//			IOUtils.closeQuietly(br);
+//			IOUtils.closeQuietly(errorBr);
+//		}
+		
+		ObjectMapper mapper = new ObjectMapper();
+		Session session= null;
+		Channel channel= null;
+		InputStream in = null;
 		try {
-			Process p = pb.start();
-			if (p.isAlive()) {
-				p.waitFor();
-			}
-			br = new BufferedReader(new InputStreamReader(p.getInputStream(), "utf-8"));
-			String line = null;
-			StringBuffer sb = new StringBuffer();
-			while ((line = br.readLine()) != null) {
-				sb.append(line).append("\n");
-			}
-			result.put("code", "success");
+			JsonNode params = mapper.readTree(task.getParams());
+			String host = params.get("host").asText();
+			String user = params.get("user").asText();
+			Integer port = params.get("port").asInt(22);
+			String password = params.get("password").asText();
+			String command = params.get("command").asText();
+			JSch jsch=new JSch();
+			session=jsch.getSession(user, host, port);
+			session.setPassword(password);
+			session.setConfig("StrictHostKeyChecking", "no");
+			session.connect(5*1000);
+            channel = session.openChannel("exec");
+            ChannelExec execChannel = (ChannelExec)channel;
+            execChannel.setCommand(command);
+            in = channel.getInputStream();
+            channel.connect();
+            
+            StringBuffer sb = new StringBuffer();
+            int c = -1;
+            while((c = in.read()) != -1){
+                sb.append((char)c);
+            }
+            log.info("shell exec result:",sb.toString());
+            result.put("code", "success");
 			result.put("msg", sb.toString());
-
-		} catch (IOException e) {
+			
+		} catch (Exception e) {
 			log.error("shellExc error", e);
 			result.put("code", "fail");
 			result.put("msg", e.getMessage());
-		} catch (InterruptedException e) {
-			log.error("shellExc error", e);
-			result.put("code", "fail");
-			result.put("msg", e.getMessage());
+			return result;
 		} finally {
-			IOUtils.closeQuietly(br);
-			IOUtils.closeQuietly(errorBr);
+			IOUtils.closeQuietly(in);
+			channel.disconnect();
+			session.disconnect();
 		}
-
+		
+		
 		return result;
 	}
 	

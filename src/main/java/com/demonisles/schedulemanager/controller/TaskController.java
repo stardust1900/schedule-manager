@@ -107,6 +107,8 @@ public class TaskController {
 			return taskExcService.httpExc(task).get("msg");
 		}else if("shell".equals(task.getTaskType())) {
 			return taskExcService.shellExc(task).get("msg");
+		}else if("sql".equals(task.getTaskType())) {
+			return taskExcService.sqlExc(task).get("msg");
 		}else {
 			return null;
 		}
@@ -172,6 +174,9 @@ public class TaskController {
 			log.info("httpExc result:{}",result);
 		}else if("shell".equals(task.getTaskType())) {
 			result = taskExcService.shellExc(task);
+			log.info("shellExc result:{}",result);
+		}else if("sql".equals(task.getTaskType())) {
+			result = taskExcService.sqlExc(task);
 			log.info("shellExc result:{}",result);
 		}
 		
