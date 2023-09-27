@@ -160,9 +160,14 @@
 		    <li th:class="${logs.first}? 'disabled'">
 		    <a href="#" aria-label="Previous" th:onclick="${logs.first}?'':'queryLogs('+${number-1}+')'"><span aria-hidden="true">&laquo;</span></a>
 		    </li>
-		    <li th:each="index : ${#numbers.sequence(1,totalPages)}" th:class="${index==number}?'active'">
+		    <!-- <li th:each="index : ${#numbers.sequence(1,totalPages)}" th:class="${index==number}?'active'">
 			    <a href="#" th:text="${index}" th:onclick="${index==number}?'':'queryLogs('+${index}+')'">
 			    <span class="sr-only" th:if="${index==number}">(current)</span>
+			    </a>
+		    </li> -->
+		    <li th:each="flag : ${visibalePage}" th:class="${flag==number}?'active'">
+			    <a href="#" th:text="${flag == -1?'...':flag}" th:onclick="${flag==number || flag == -1}?'':'queryLogs('+${flag}+')'">
+			    <span class="sr-only" th:if="${flag==number || flag==-1}">(current)</span>
 			    </a>
 		    </li>
 		    <li th:class="${logs.last}? 'disabled'">

@@ -1,10 +1,14 @@
 package com.demonisles.schedulemanager.controller;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +28,7 @@ import com.demonisles.schedulemanager.service.TaskService;
 
 @Controller
 public class TaskLogController {
-
+	private static final Logger log = LoggerFactory.getLogger(TaskLogController.class);
 	public static final Integer defaultPageSize = 5 ;
 	
 	@Autowired
@@ -62,10 +66,46 @@ public class TaskLogController {
 		}else {
 			model.addAttribute("pageIndex", pageIndex);
 		}
+		List<Integer> visibalePage = new ArrayList<>();
+		if(totalPages<=7) {
+			for(int i = 1;i<=totalPages;i++) {
+				visibalePage.add(i);
+			}
+		}else {
+			visibalePage.add(1);
+			if(pageIndex -4 > 0) {
+				visibalePage.add(-1);
+				if(pageIndex + 4 <= totalPages) {
+					visibalePage.add(pageIndex-1);
+				}
+			}else {
+				visibalePage.add(2);
+				visibalePage.add(3);
+			}
+			
+			if(pageIndex + 4 <= totalPages) {
+				visibalePage.add(visibalePage.get(2)+1);
+				visibalePage.add(visibalePage.get(2)+2);
+				visibalePage.add(-1);
+				visibalePage.add(totalPages);
+			}else {
+				visibalePage.add(totalPages-4);
+				visibalePage.add(totalPages-3);
+				visibalePage.add(totalPages-2);
+				visibalePage.add(totalPages-1);
+				visibalePage.add(totalPages);
+			}
+		}
+		log.debug("visibalePage:{}",visibalePage);
+		
+		
+		
+		
 		model.addAttribute("pageSize", pageSize);
 		model.addAttribute("taskId", taskId);
 		model.addAttribute("taskDate", taskDate);
 		model.addAttribute("tasks", taskService.findAll());
+		model.addAttribute("visibalePage", visibalePage);
 		return "logs";
 	}
 	
