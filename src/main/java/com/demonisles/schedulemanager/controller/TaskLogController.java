@@ -97,10 +97,7 @@ public class TaskLogController {
 			}
 		}
 		log.debug("visibalePage:{}",visibalePage);
-		
-		
-		
-		
+
 		model.addAttribute("pageSize", pageSize);
 		model.addAttribute("taskId", taskId);
 		model.addAttribute("taskDate", taskDate);

@@ -69,8 +69,47 @@ public class TaskController {
 		model.addAttribute("tasks", tasks);
 		model.addAttribute("taskName", taskName);
 		model.addAttribute("taskType", taskType);
-		model.addAttribute("pageIndex", pageIndex);
+//		model.addAttribute("pageIndex", pageIndex);
 		model.addAttribute("pageSize", pageSize);
+		
+		int totalPages = tasks.getTotalPages();
+		if(pageIndex > totalPages) {
+			model.addAttribute("pageIndex", totalPages==0 ? 1 : totalPages);
+		}else {
+			model.addAttribute("pageIndex", pageIndex);
+		}
+		List<Integer> visibalePage = new ArrayList<>();
+		if(totalPages<=7) {
+			for(int i = 1;i<=totalPages;i++) {
+				visibalePage.add(i);
+			}
+		}else {
+			visibalePage.add(1);
+			if(pageIndex -4 > 0) {
+				visibalePage.add(-1);
+				if(pageIndex + 4 <= totalPages) {
+					visibalePage.add(pageIndex-1);
+				}
+			}else {
+				visibalePage.add(2);
+				visibalePage.add(3);
+			}
+			
+			if(pageIndex + 4 <= totalPages) {
+				visibalePage.add(visibalePage.get(2)+1);
+				visibalePage.add(visibalePage.get(2)+2);
+				visibalePage.add(-1);
+				visibalePage.add(totalPages);
+			}else {
+				visibalePage.add(totalPages-4);
+				visibalePage.add(totalPages-3);
+				visibalePage.add(totalPages-2);
+				visibalePage.add(totalPages-1);
+				visibalePage.add(totalPages);
+			}
+		}
+		log.debug("visibalePage:{}",visibalePage);
+		model.addAttribute("visibalePage", visibalePage);
 		return "home";
 	}
 
